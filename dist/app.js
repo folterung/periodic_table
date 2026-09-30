@@ -8,6 +8,17 @@ const note=document.createElement('div');note.className='table-note';note.innerH
 for(const e of elements){const b=document.createElement('button');b.className='element';b.dataset.number=e.number;b.style.cssText=`--color:${colors[e.category]};grid-column:${e.col+1};grid-row:${e.row+1}`;b.setAttribute('aria-label',`${e.number}, ${e.name}, ${e.symbol}, ${e.category}`);b.setAttribute('aria-pressed','false');b.tabIndex=e.number===1?0:-1;b.innerHTML=`<span class="number">${e.number}</span><span class="symbol">${e.symbol}</span><span class="name">${e.name}</span>`;b.onclick=()=>show(e.number);b.onkeydown=ev=>navigate(ev,e);table.append(b);}
 for(const [name,color]of Object.entries(colors)){$('#category').add(new Option(name,name));const item=document.createElement('span');item.style.setProperty('--color',color);item.innerHTML=`<i></i>${name}`;$('#legend').append(item);}
 for(let p=1;p<=7;p++)$('#period').add(new Option(`Period ${p}`,p));
+// Region outlines share the table's coordinate system and never intercept tiles.
+const blockRegions=[
+ {title:'s-block',color:'#ffba66',numbers:elements.filter(e=>e.group===1||e.group===2).map(e=>e.number),top:true},
+ {title:'d-block',color:'#6aafff',numbers:elements.filter(e=>e.group>=3&&e.group<=12).map(e=>e.number)},
+ {title:'p-block',color:'#b9ef6c',numbers:elements.filter(e=>e.group>=13&&e.number!==2).map(e=>e.number)},
+ {title:'f-block series*',color:'#e5a0ff',numbers:elements.filter(e=>e.row>=9).map(e=>e.number)},
+ {title:'s-block · He',color:'#ffba66',numbers:[2],top:true}
+];
+const blockFrames=blockRegions.map(region=>{const frame=document.createElement('div');frame.className='block-outline';frame.style.setProperty('--block-color',region.color);frame.setAttribute('aria-label',region.title);const label=document.createElement('span');label.className='block-title';label.textContent=region.title;frame.append(label);table.append(frame);return{region,frame,label};});
+function layoutBlocks(){const origin=table.getBoundingClientRect();for(const {region,frame,label}of blockFrames){const rects=region.numbers.map(n=>table.querySelector(`[data-number="${n}"]`).getBoundingClientRect());const left=Math.min(...rects.map(r=>r.left))-origin.left-3,top=Math.min(...rects.map(r=>r.top))-origin.top-3,right=Math.max(...rects.map(r=>r.right))-origin.left+3,bottom=Math.max(...rects.map(r=>r.bottom))-origin.top+3;Object.assign(frame.style,{left:left+'px',top:top+'px',width:right-left+'px',height:bottom-top+'px'});label.style.top=region.top?(-top+2)+'px':'-29px';}}
+new ResizeObserver(layoutBlocks).observe(table);document.fonts.ready.then(layoutBlocks);layoutBlocks();
 function matches(e){const q=$('#search').value.trim().toLowerCase();const aliases={13:'aluminum',55:'cesium',16:'sulphur'};return(!q||e.name.toLowerCase().includes(q)||e.symbol.toLowerCase()===q||String(e.number)===q||aliases[e.number]?.includes(q))&&(!$('#category').value||e.category===$('#category').value)&&(!$('#period').value||e.period===+$('#period').value);}
 function filter(){let count=0;for(const e of elements){const b=table.querySelector(`[data-number="${e.number}"]`),match=matches(e);b.classList.toggle('dim',!match);b.disabled=!match;b.tabIndex=match&&count++===0?0:-1;}$('#count').textContent=`${count} of 118 elements`;$('#empty').hidden=count!==0;}
 for(const id of ['search','category','period'])$('#'+id).addEventListener(id==='search'?'input':'change',filter);
