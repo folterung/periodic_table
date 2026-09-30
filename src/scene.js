@@ -22,7 +22,7 @@ function frameGeometry(width,height,thickness=2,depth=7){
 }
 export class ElementWorld {
  constructor(canvas,elements,callbacks={}) {
-  this.canvas=canvas;this.elements=elements;this.callbacks=callbacks;this.mode='Table';this.selected=null;this.hovered=null;this.savedView=null;this.motion=matchMedia('(prefers-reduced-motion: reduce)');this.reduced=this.motion.matches;this.mobile=innerWidth<=760;this.paused=false;this.cards=[];this.pickMeshes=[];this.morph=null;this.cameraMove=null;this.blockOpacity=1;this.matches=new Set(elements.map(e=>e.number));this.filterActive=false;
+  this.canvas=canvas;this.elements=elements;this.callbacks=callbacks;this.mode='Table';this.selected=null;this.hovered=null;this.savedView=null;this.motion=matchMedia('(prefers-reduced-motion: reduce)');this.reduced=this.motion.matches;this.mobile=innerWidth<=760||matchMedia('(pointer: coarse)').matches;this.paused=false;this.cards=[];this.pickMeshes=[];this.morph=null;this.cameraMove=null;this.blockOpacity=1;this.matches=new Set(elements.map(e=>e.number));this.filterActive=false;
   const gl=canvas.getContext('webgl2',{alpha:false,antialias:true,powerPreference:'high-performance'});if(!gl)throw Error('WebGL 2 is unavailable.');
   this.renderer=new THREE.WebGLRenderer({canvas,context:gl,antialias:true,alpha:false});this.renderer.setClearColor('#08111f');this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.12;
   this.quality=Math.min(devicePixelRatio||1,this.mobile?1.35:1.8);this.renderer.setPixelRatio(this.quality);
@@ -31,7 +31,7 @@ export class ElementWorld {
   this.controls=new OrbitControls(this.camera,canvas);this.controls.enableDamping=!this.reduced;this.controls.dampingFactor=.09;this.controls.rotateSpeed=.48;this.controls.zoomSpeed=.8;this.controls.panSpeed=.9;this.controls.minDistance=45;this.controls.maxDistance=22000;this.controls.touches.ONE=THREE.TOUCH.ROTATE;this.controls.touches.TWO=THREE.TOUCH.DOLLY_PAN;
   this.controls.addEventListener('start',()=>{this.cancelCamera();this.clearHover();});
   this.controls.addEventListener('change',()=>{this.dirtyPointer=true;});
-  this.layouts=makeLayouts(elements);this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2(2,2);this.pointerScreen={x:0,y:0};this.dirtyPointer=false;this.activePointers=new Map();this.dragged=false;
+  this.layouts=makeLayouts(elements);this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2(2,2);this.pointerScreen={x:0,y:0};this.dirtyPointer=false;this.pointerInside=false;this.activePointers=new Map();this.dragged=false;
   this.scene.add(new THREE.HemisphereLight('#b9eaff','#112537',2.2));
   const light=new THREE.DirectionalLight('#9cd9ff',2.5);light.position.set(1000,1600,2000);this.scene.add(light);
   const rim=new THREE.PointLight('#69e6c6',850000,6500,2);rim.position.set(-1500,600,-1300);this.scene.add(rim);
@@ -171,7 +171,7 @@ export class ElementWorld {
   c.addEventListener('pointerdown',event=>{this.activePointers.set(event.pointerId,{x:event.clientX,y:event.clientY});this.downTime=performance.now();if(this.activePointers.size===1)this.dragged=false;else this.dragged=true;this.canvas.style.cursor='grabbing';this.clearHover();});
   c.addEventListener('pointermove',event=>{
    const start=this.activePointers.get(event.pointerId);if(start&&Math.hypot(event.clientX-start.x,event.clientY-start.y)>6)this.dragged=true;
-   this.pointerScreen={x:event.clientX,y:event.clientY};this.dirtyPointer=true;
+   this.pointerScreen={x:event.clientX,y:event.clientY};this.pointerInside=event.pointerType!=='touch'&&document.elementFromPoint(event.clientX,event.clientY)===c;this.dirtyPointer=true;if(!this.pointerInside)this.clearHover();
   });
   c.addEventListener('pointerup',event=>{
    const had=this.activePointers.has(event.pointerId),single=this.activePointers.size===1;this.activePointers.delete(event.pointerId);
@@ -179,7 +179,7 @@ export class ElementWorld {
    if(!this.activePointers.size){this.canvas.style.cursor='grab';this.dragged=false;}
   });
   c.addEventListener('pointercancel',event=>{this.activePointers.delete(event.pointerId);this.dragged=true;this.clearHover();});
-  c.addEventListener('pointerleave',()=>{this.pointer.set(2,2);this.dirtyPointer=false;this.clearHover();});
+  c.addEventListener('pointerleave',()=>{this.pointer.set(2,2);this.pointerInside=false;this.dirtyPointer=false;this.clearHover();});
   c.addEventListener('wheel',()=>{this.cancelCamera();this.clearHover();},{passive:true});
   c.addEventListener('keydown',event=>{
    const keys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','_','r','R'];if(!keys.includes(event.key))return;event.preventDefault();this.cancelCamera();
@@ -192,7 +192,7 @@ export class ElementWorld {
  zoom(closer){this.cancelCamera();if(closer)this.controls.dollyIn(.8);else this.controls.dollyOut(.8);this.controls.update();}
  resize(refit=true){
   const width=this.canvas.parentElement.clientWidth,height=this.canvas.parentElement.clientHeight;if(!width||!height)return;
-  const mobile=width<=760;if(mobile!==this.mobile){this.mobile=mobile;this.bloom.enabled=!mobile;this.quality=Math.min(devicePixelRatio||1,mobile?1.35:1.8);this.renderer.setPixelRatio(this.quality);}
+  const mobile=width<=760||matchMedia('(pointer: coarse)').matches;if(mobile!==this.mobile){this.mobile=mobile;this.bloom.enabled=!mobile;this.quality=Math.min(devicePixelRatio||1,mobile?1.35:1.8);this.renderer.setPixelRatio(this.quality);}
   this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false);this.composer.setSize(width,height);
   // Bloom is intentionally low resolution; the card text remains full resolution.
   this.bloom.setSize(Math.round(width*this.quality*.6),Math.round(height*this.quality*.6));
@@ -204,7 +204,7 @@ export class ElementWorld {
   if(this.morph){const t=this.morph.duration?Math.min(1,(now-this.morph.start)/this.morph.duration):1,amount=ease(t);for(let i=0;i<this.cards.length;i++){const card=this.cards[i],from=this.morph.from[i],to=this.morph.to[i];card.object.position.lerpVectors(from.position,to.position,amount);card.object.quaternion.slerpQuaternions(from.quaternion,to.quaternion,amount);}this.blockOpacity=THREE.MathUtils.lerp(this.morph.blockFrom,this.morph.blockTo,amount);this.setBlockOpacity();if(t===1)this.morph=null;}
   if(this.cameraMove){const move=this.cameraMove,t=move.duration?Math.min(1,(now-move.start)/move.duration):1,amount=ease(t);this.controls.enabled=false;this.camera.position.lerpVectors(move.fromPosition,move.toPosition,amount);this.controls.target.lerpVectors(move.fromTarget,move.toTarget,amount);this.currentCenter={x:THREE.MathUtils.lerp(move.fromCenter.x,move.toCenter.x,amount),y:THREE.MathUtils.lerp(move.fromCenter.y,move.toCenter.y,amount)};this.viewOffset({centerX:this.currentCenter.x,centerY:this.currentCenter.y});this.camera.lookAt(this.controls.target);if(t===1){this.cameraMove=null;this.controls.enabled=true;}}
   this.controls.update();
-  if(this.dirtyPointer&&!this.activePointers.size&&!this.cameraMove&&!this.morph){this.dirtyPointer=false;const n=this.pick(this.pointerScreen.x,this.pointerScreen.y);this.hovered=n;this.updateHighlights();this.canvas.style.cursor=n?'pointer':'grab';this.callbacks.onHover?.(n?this.elements[n-1]:null,this.pointerScreen.x,this.pointerScreen.y);}
+  if(this.dirtyPointer&&this.pointerInside&&!this.activePointers.size&&!this.cameraMove&&!this.morph){this.dirtyPointer=false;const n=this.pick(this.pointerScreen.x,this.pointerScreen.y);this.hovered=n;this.updateHighlights();this.canvas.style.cursor=n?'pointer':'grab';this.callbacks.onHover?.(n?this.elements[n-1]:null,this.pointerScreen.x,this.pointerScreen.y);}
   if(this.bloom.enabled)this.composer.render();else this.renderer.render(this.scene,this.camera);
   const elapsed=now-this.lastFrame;this.lastFrame=now;this.frames++;
   if(elapsed>0&&elapsed<200)this.frameTimes.push(elapsed);
