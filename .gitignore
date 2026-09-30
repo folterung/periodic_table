@@ -1,2 +1,5 @@
 *.png
 .sites-runtime/
+node_modules/
+qa-output/
+.qa-runtime/

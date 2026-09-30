@@ -1,4 +1,4 @@
-const elements = [
+export const elements = [
   {
     "number": 1,
     "symbol": "H",

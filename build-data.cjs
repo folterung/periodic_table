@@ -6,5 +6,5 @@ const elements=[...html.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(m=>[...m[1].match
 let category=f?(period===6?'Lanthanide':'Actinide'):n===1?'Other nonmetal':group===1?'Alkali metal':group===2?'Alkaline earth metal':group===18?'Noble gas':group===17?'Halogen':[5,14,32,33,51,52].includes(n)?'Metalloid':[6,7,8,15,16,34].includes(n)?'Other nonmetal':group>=3&&group<=12?'Transition metal':'Post-transition metal';
 return {number:n,symbol:r[1],name:r[2][0].toUpperCase()+r[2].slice(1),mass:isotopes[n]?`[${isotopes[n]}]`:r[3].split('±')[0].trim(),uncertainty:isotopes[n]?null:r[3].split('±')[1]?.trim(),period,group,category,row:f?(period===6?9:10):period,col:f?n-(period===6?57:89)+3:group,valence:f?(n===103?3:2):group>=3&&group<=12?group:n===2?2:group<=2?group:group-10};});
 if(elements.length!==118)throw Error('Expected 118 elements, got '+elements.length);
-fs.writeFileSync('dist/elements.js','const elements = '+JSON.stringify(elements,null,2)+';\n');
+fs.writeFileSync('dist/elements.js','export const elements = '+JSON.stringify(elements,null,2)+';\n');
 console.log('Generated 118 elements from CIAAW; isotope numbers from IUPAC May 2022.');

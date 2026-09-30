@@ -1,27 +1,64 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Element Atlas · Interactive Periodic Table</title><meta name="description" content="Explore all 118 elements: atomic mass, electron counts, periods, and element families in an interactive periodic table."><meta property="og:title" content="Element Atlas"><meta property="og:description" content="Explore the building blocks of matter. All 118 elements, explained."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d1726'/%3E%3Ctext x='5' y='24' fill='%2386ead0' font-family='sans-serif' font-weight='bold' font-size='23'%3EE%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="view3d.css"><script src="elements.js" defer></script><script src="app.js" defer></script><script src="view3d.js" defer></script></head>
-<body><header><a class="brand" href="./"><span class="brandmark">E<span>118</span></span> ELEMENT ATLAS</a><a href="#guide">Reading the table</a></header>
-<main><div class="intro"><div><p class="eyebrow">THE BUILDING BLOCKS OF MATTER</p><h1>Small elements.<br class="mobile-break"> Endless possibilities.</h1></div><p>Select an element to explore its properties.<br>118 elements. One connected world.</p></div>
-<section class="controls" aria-label="Find elements"><label class="search">Search elements<input id="search" type="search" placeholder="Name, symbol, or atomic number" autocomplete="off"></label><label>Element family<select id="category"><option value="">All families</option></select></label><label>Period<select id="period"><option value="">All periods</option></select></label><button id="reset" class="reset">Reset</button></section>
-<div class="table-heading"><h2>Periodic table · 3D field</h2><span id="count" role="status">118 of 118 elements</span></div>
-<section class="view-controls" aria-label="3D view controls">
- <div class="drag-modes" role="group" aria-label="Drag action"><button id="orbit-mode" aria-pressed="true">Rotate</button><button id="pan-mode" aria-pressed="false">Move</button></div>
- <label>Tilt<input id="view-tilt" type="range" min="-65" max="65" value="28" aria-label="Table tilt"></label>
- <label>Turn<input id="view-turn" type="range" min="-65" max="65" value="-10" aria-label="Table turn"></label>
- <div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><output id="zoom-level" aria-live="polite">100%</output><button id="zoom-in" aria-label="Zoom in">+</button></div>
- <button id="fit-view">Reset view</button><button id="front-view">Front view</button>
-</section>
-<p class="hint" id="view-help">Drag to rotate · Shift-drag to move · Scroll or pinch to zoom · Tap an element for details.</p>
-<div id="scene" class="scene" tabindex="0" role="region" aria-label="Movable 3D periodic table" aria-describedby="view-help">
- <div class="scene-caption" aria-hidden="true">ELEMENT FIELD <span>118 ELEMENTS</span></div>
- <div id="view-world" class="view-world"><div class="field" aria-hidden="true"></div><div id="table" class="table" role="group" aria-label="118 chemical elements"></div></div>
- <span class="scene-corner" aria-hidden="true">DRAG TO EXPLORE</span>
-</div><p class="camera-help">Keyboard: focus the field and use arrows to move, Shift + arrows to rotate, + / − to zoom, and R to reset. On an element, arrows navigate the table and Enter opens its details.</p><p id="empty" hidden>No elements match. Try another search or reset the filters.</p>
-<p class="block-note">Outlines mark the s, p, d, and f regions; tile colors show element families. Helium is in the s-block. *The detached f-block series include all lanthanides and actinides for this compact layout; the placement of the end elements varies by convention.</p><div id="legend" class="legend" aria-label="Element family color legend"></div>
-<section id="guide" class="guide"><div><p class="eyebrow">A LITTLE CONTEXT</p><h2>Get to know the table.</h2></div><div><h3>Numbers tell a story</h3><p>Atomic number counts protons. A neutral atom has the same number of electrons. The chemical symbol is an element’s short name; the period is its horizontal row.</p></div><div><h3>Families share patterns</h3><p>Colors identify element categories. Groups are vertical columns. Lanthanides and actinides belong to periods 6 and 7; they sit below to keep the table compact.</p></div><div><h3>Electrons shape chemistry</h3><p>Valence electrons help atoms bond. Main-group counts use the outer shell; transition-metal counts include s and d electrons. Inner-transition elements need extra care.</p></div></section>
-<details class="sources"><summary>Scientific notes & sources</summary><p>Atomic masses use the <a href="https://ciaaw.org/abridged-atomic-weights.htm" target="_blank" rel="noreferrer">CIAAW abridged standard atomic weights</a>, including the 2024 revisions, with uncertainties shown in each detail panel. These are averages for normal terrestrial materials; individual isotopes have different masses. Standard atomic weight is dimensionless; its numerical value gives the corresponding average atomic mass in u.</p><p>Bracketed integers come from the <a href="https://iupac.org/wp-content/uploads/2022/07/IUPAC_Periodic_Table-04May22_CRA.pdf" target="_blank" rel="noreferrer">IUPAC May 2022 periodic table</a>. They identify the mass number (protons + neutrons) of the isotope with the longest confirmed half-life in that edition, not a standard atomic weight or exact isotope mass.</p><p>Valence conventions follow <a href="https://openstax.org/books/chemistry-2e/pages/6-4-electronic-structure-of-atoms-electron-configurations" target="_blank" rel="noreferrer">OpenStax’s electron-configuration discussion</a>. For d-block elements we show the formal s + d count; it is not a bond count or oxidation state. For lanthanides and actinides we show the outermost-shell count; f and d electrons can also participate in bonding. Lawrencium uses the 7s²7p¹ ground-state assignment.</p><p>Categories are an educational convention: group 12 is included with the transition metals, polonium with post-transition metals, and astatine with halogens. Superheavy-element categories and main-group valence counts follow table position; their chemistry is not fully established. See the <a href="https://periodic-table.rsc.org/" target="_blank" rel="noreferrer">Royal Society of Chemistry</a> for individual element references.</p></details>
-<footer><span>ELEMENT ATLAS</span><span>Curiosity starts with one element.</span></footer></main>
-<dialog id="detail" aria-labelledby="element-name"><div class="dialog-top"><span class="eyebrow">ELEMENT PROFILE</span><button id="close" aria-label="Close element details">✕</button></div><div id="profile"></div><div class="dialog-nav"><button id="previous">Previous element</button><button id="next">Next element</button></div></dialog>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Element Atlas · A world of elements</title>
+ <meta name="description" content="Explore all 118 elements in a luminous, interactive 3D periodic table. Transform between Table, Helix, Sphere, and Grid."><meta name="theme-color" content="#08111f">
+ <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d1726'/%3E%3Ctext x='5' y='24' fill='%2386ead0' font-family='sans-serif' font-weight='bold' font-size='23'%3EE%3C/text%3E%3C/svg%3E">
+ <link rel="stylesheet" href="style.css"><script type="module" src="assets/main.js"></script>
+</head>
+<body>
+ <a class="skip" href="#search">Find an element</a>
+ <main id="atlas">
+  <div id="world"><canvas id="canvas" tabindex="0" role="region" aria-label="Interactive 3D element world" aria-describedby="camera-instructions"></canvas></div>
+  <div id="loading" role="status"><span class="loading-orbit"></span>Preparing your element world…</div>
+  <header class="topbar">
+   <a class="brand" href="./" aria-label="Element Atlas home"><span class="brandmark">E<small>118</small></span><span>ELEMENT <b>ATLAS</b><small>A WORLD OF ELEMENTS</small></span></a>
+   <nav class="layouts" aria-label="Spatial arrangement">
+    <button data-layout="Table" aria-pressed="true"><span aria-hidden="true">▦</span>Table</button>
+    <button data-layout="Helix" aria-pressed="false"><span aria-hidden="true">≋</span>Helix</button>
+    <button data-layout="Sphere" aria-pressed="false"><span aria-hidden="true">◉</span>Sphere</button>
+    <button data-layout="Grid" aria-pressed="false"><span aria-hidden="true">▧</span>Grid</button>
+   </nav>
+   <div class="header-actions"><button id="browse" aria-expanded="false" aria-controls="results">Element list</button><button id="about">Guide & sources</button></div>
+  </header>
+  <section class="finder" aria-label="Find elements">
+   <label class="search-label"><span aria-hidden="true">⌕</span><span class="sr-only">Search elements</span><input id="search" type="search" placeholder="Name, symbol, or atomic number" autocomplete="off" aria-controls="results"></label>
+   <button id="filter-toggle" aria-expanded="false" aria-controls="filter-options">Filters <span id="filter-badge" hidden>•</span></button>
+   <div id="filter-options"><label><span class="sr-only">Element family</span><select id="category"><option value="">All families</option></select></label><label><span class="sr-only">Period</span><select id="period"><option value="">All periods</option></select></label><button id="clear">Clear</button></div>
+   <span id="count" role="status" aria-live="polite">118 elements</span>
+  </section>
+  <section id="results" class="results surface" aria-label="Matching elements" hidden>
+   <div class="panel-top"><h2>Find your element</h2><button id="close-results" aria-label="Close element list">✕</button></div>
+   <p id="results-help">Choose a card to locate it in the world and open its details.</p><p id="empty" hidden>No elements match. Clear the filters to start again.</p><div id="result-list"></div>
+  </section>
+  <div class="scene-label" aria-hidden="true"><span id="mode-label">01 / THE PERIODIC TABLE</span><p id="mode-description">118 elements. One connected world.</p></div>
+  <div id="preview" role="tooltip" hidden></div>
+  <div class="view-actions" role="group" aria-label="Camera controls"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="overview" title="Fit all elements (R)">Overview <span aria-hidden="true">↗</span></button><button id="return" hidden>Back to view <span aria-hidden="true">↶</span></button></div>
+  <aside id="detail" class="detail surface" role="region" aria-labelledby="element-name" hidden>
+   <div class="panel-top"><span class="eyebrow">ELEMENT PROFILE</span><button id="close-detail" aria-label="Close element details">✕</button></div><div id="profile"></div><div class="profile-nav"><button id="previous">← Previous</button><button id="next">Next →</button></div>
+  </aside>
+  <footer class="bottom-hud">
+   <div class="legend-heading"><span>ELEMENT FAMILIES</span><button id="legend-toggle" aria-expanded="true" aria-controls="legend">Hide legend</button><span class="live-dot">118 IN THE WORLD</span></div>
+   <div id="legend" aria-label="Element family color legend"></div>
+   <div class="field-notes"><p id="camera-instructions">Drag to orbit · Shift / right-drag to pan · Scroll to zoom</p><p id="arrangement-note">Outlines mark electron blocks; card colors mark element families.</p></div>
+  </footer>
+ </main>
+ <dialog id="guide" aria-labelledby="guide-title">
+  <div class="panel-top"><span class="eyebrow">HOW TO EXPLORE</span><button id="close-guide" aria-label="Close guide">✕</button></div><h2 id="guide-title">A little curiosity goes a long way.</h2>
+  <h3>Move through the world</h3><p>Drag to orbit, Shift-drag or right-drag to pan, and scroll to zoom. On touch screens, use one finger to rotate and two fingers to pan or pinch. Click or tap a card to approach it and open its profile. “Back to view” returns to where you were; “Overview” fits the formation.</p>
+  <h3>Explore with a keyboard</h3><p>Focus the world with Tab. Arrow keys orbit; Shift + arrows pan. + and − zoom, R fits the formation, and Escape closes a profile and returns to the previous view. Use the Element list or search results to select any element with Tab and Enter. Layouts and filters also work with a keyboard.</p>
+  <h3>Four ways to see the same elements</h3><p>The Table shows conventional groups and periods. Helix, Sphere, and Grid are spatial visualizations; they do not change chemical relationships. The separate lanthanide and actinide rows belong to periods 6 and 7.</p>
+  <p>Pink outlines mark the s-block (including helium), orange the d-block, blue the p-block, and purple the detached f-block series. The f-series include all lanthanides and actinides in this compact layout; the placement of their end elements varies by convention.</p>
+  <h3>Numbers tell a story</h3><p>The atomic number counts protons. A neutral atom has the same number of electrons. The period is its horizontal row. Main-group valence counts use the outer shell; transition-metal counts include s and d electrons.</p>
+  <h3>Scientific notes & sources</h3>
+  <p>Atomic masses use the <a href="https://ciaaw.org/abridged-atomic-weights.htm" target="_blank" rel="noreferrer">CIAAW abridged standard atomic weights</a>, including the 2024 revisions, with uncertainties shown in each profile. These are averages for normal terrestrial materials; individual isotopes have different masses. Standard atomic weight is dimensionless; its numerical value gives the corresponding average atomic mass in u.</p>
+  <p>Bracketed integers come from the <a href="https://iupac.org/wp-content/uploads/2022/07/IUPAC_Periodic_Table-04May22_CRA.pdf" target="_blank" rel="noreferrer">IUPAC May 2022 periodic table</a>. They identify the mass number (protons + neutrons) of the isotope with the longest confirmed half-life in that edition, not a standard atomic weight or exact isotope mass.</p>
+  <p>Valence conventions follow <a href="https://openstax.org/books/chemistry-2e/pages/6-4-electronic-structure-of-atoms-electron-configurations" target="_blank" rel="noreferrer">OpenStax’s electron-configuration discussion</a>. For d-block elements we show the formal s + d count; it is not a bond count or oxidation state. For lanthanides and actinides we show the outermost-shell count; f and d electrons can also participate in bonding. Lawrencium uses the 7s²7p¹ ground-state assignment.</p>
+  <p>Categories are an educational convention: group 12 is included with the transition metals, polonium with post-transition metals, and astatine with halogens. Superheavy-element categories and main-group valence counts follow table position; their chemistry is not fully established. See the <a href="https://periodic-table.rsc.org/" target="_blank" rel="noreferrer">Royal Society of Chemistry</a> for individual references.</p>
+  <p id="quality-note">Rendering quality adapts to your screen and device. System reduced-motion preferences are respected.</p><button id="text-view">Open accessible element view</button>
+ </dialog>
+ <section id="fallback" hidden aria-labelledby="fallback-title"><h1 id="fallback-title">Element Atlas</h1><p id="fallback-reason">Explore all 118 elements in an accessible list.</p><button id="resume-world">Return to 3D world</button><div id="fallback-list"></div></section>
+ <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+ <noscript><p class="noscript">Element Atlas needs JavaScript for its interactive world. Scientific references: <a href="https://periodic-table.rsc.org/">Royal Society of Chemistry periodic table</a>.</p></noscript>
 </body></html>
-
-
