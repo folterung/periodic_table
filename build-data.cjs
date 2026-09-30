@@ -1,0 +1,10 @@
+const fs=require('fs');
+const html=fs.readFileSync('ciaaw-source.html','utf8');
+const clean=s=>s.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&plusmn;/g,'±').trim();
+const isotopes={43:97,61:145,84:209,85:210,86:222,87:223,88:226,89:227,93:237,94:244,95:243,96:247,97:247,98:251,99:252,100:257,101:258,102:259,103:262,104:267,105:268,106:269,107:270,108:269,109:277,110:281,111:282,112:285,113:286,114:290,115:290,116:293,117:294,118:294};
+const elements=[...html.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(m=>[...m[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(m=>clean(m[1]))).filter(r=>/^\d+$/.test(r[0])).map(r=>{const n=+r[0]; const period=[2,10,18,36,54,86,118].findIndex(end=>n<=end)+1;const f=n>=57&&n<=71||n>=89&&n<=103;let group=n===1?1:n===2?18:period<=3?(n-(period===2?2:10)<=2?n-(period===2?2:10):n-(period===2?2:10)+10):n-([0,0,0,0,18,36,54,86][period])-(n>=72&&n<=86||n>=104?14:0);if(f)group=null;
+let category=f?(period===6?'Lanthanide':'Actinide'):n===1?'Other nonmetal':group===1?'Alkali metal':group===2?'Alkaline earth metal':group===18?'Noble gas':group===17?'Halogen':[5,14,32,33,51,52].includes(n)?'Metalloid':[6,7,8,15,16,34].includes(n)?'Other nonmetal':group>=3&&group<=12?'Transition metal':'Post-transition metal';
+return {number:n,symbol:r[1],name:r[2][0].toUpperCase()+r[2].slice(1),mass:isotopes[n]?`[${isotopes[n]}]`:r[3].split('±')[0].trim(),uncertainty:isotopes[n]?null:r[3].split('±')[1]?.trim(),period,group,category,row:f?(period===6?9:10):period,col:f?n-(period===6?57:89)+3:group,valence:f?(n===103?3:2):group>=3&&group<=12?group:n===2?2:group<=2?group:group-10};});
+if(elements.length!==118)throw Error('Expected 118 elements, got '+elements.length);
+fs.writeFileSync('dist/elements.js','const elements = '+JSON.stringify(elements,null,2)+';\n');
+console.log('Generated 118 elements from CIAAW; isotope numbers from IUPAC May 2022.');
