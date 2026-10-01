@@ -22,7 +22,8 @@ export function makeLayouts(elements) {
 }
 // Outlines follow the same coordinate system as the cards, including gaps.
 const x=col=>tablePoint(col,1).x, y=row=>tablePoint(1,row).y;
-const halfW=cardSize.width/2+8, halfH=cardSize.height/2+8;
+// Leave room for neighboring block strokes without overlapping their colors.
+const halfW=cardSize.width/2+5.5, halfH=cardSize.height/2+5.5;
 export const blockRegions=[
  {name:'s-block',color:'#ff38bc',points:[[x(1)-halfW,y(1)+halfH],[x(1)+halfW,y(1)+halfH],[x(1)+halfW,y(2)+halfH],[x(2)+halfW,y(2)+halfH],[x(2)+halfW,y(7)-halfH],[x(1)-halfW,y(7)-halfH]],label:[(x(1)+x(2))/2,y(7)-halfH-42],members:e=>e.group===1||e.group===2},
  {name:'d-block',color:'#ff951f',points:[[x(3)-halfW,y(4)+halfH],[x(12)+halfW,y(4)+halfH],[x(12)+halfW,y(7)-halfH],[x(3)-halfW,y(7)-halfH]],label:[(x(3)+x(12))/2,y(7)-halfH-42],members:e=>e.group>=3&&e.group<=12},

@@ -7,6 +7,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeLayouts, cardSize, blockRegions, tablePoint } from './layouts.js';
 import { colors } from './science.js';
+import { blockOutlineShape } from './block-outlines.js';
 const v=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
 const ease=t=>t*t*(3-2*t);
 const blockFadeDuration=300;
@@ -75,11 +76,8 @@ export class ElementWorld {
   for(const region of blockRegions){
    const group=new THREE.Group();group.name=region.name;
    const mat=new THREE.MeshBasicMaterial({color:region.color,transparent:true,opacity:.95,toneMapped:false});this.blockMaterials.push({material:mat,opacity:.95});
-   for(let i=0;i<region.points.length;i++){
-    const a=region.points[i],b=region.points[(i+1)%region.points.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]);
-    const tube=new THREE.Mesh(new THREE.CylinderGeometry(6.5,6.5,length,8),mat);tube.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,10);tube.rotation.z=-Math.atan2(b[0]-a[0],b[1]-a[1]);group.add(tube);
-    const cap=new THREE.Mesh(new THREE.SphereGeometry(6.5,8,6),mat);cap.position.set(a[0],a[1],10);group.add(cap);
-   }
+   const geometry=new THREE.ExtrudeGeometry(blockOutlineShape(region.points),{depth:4,bevelEnabled:false,curveSegments:12});
+   const outline=new THREE.Mesh(geometry,mat);outline.name=`${region.name} continuous outline`;outline.position.z=8;group.add(outline);
    const text=labelMesh(region.name,region.color,region.name.includes('series')?420:region.name.includes('He')?260:245,52);text.position.set(...region.label,12);group.add(text);this.blockMaterials.push({material:text.material,opacity:1});this.blocks.add(group);
   }
   for(let group=1;group<=18;group++){const label=labelMesh(String(group),'#839fb5',36,30);label.position.set(tablePoint(group,1).x,780,0);this.blocks.add(label);this.blockMaterials.push({material:label.material,opacity:1});}
