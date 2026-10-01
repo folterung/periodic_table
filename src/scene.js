@@ -9,6 +9,7 @@ import { makeLayouts, cardSize, blockRegions, tablePoint } from './layouts.js';
 import { colors } from './science.js';
 const v=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
 const ease=t=>t*t*(3-2*t);
+const blockFadeDuration=300;
 function texture(draw,width=384,height=492){const c=document.createElement('canvas');c.width=width;c.height=height;draw(c.getContext('2d'),width,height);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;}
 function labelMesh(text,color,width=250,height=40){
  const map=texture((ctx,w,h)=>{ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`500 ${h*.72}px "Segoe UI", sans-serif`;ctx.fillText(text,w/2,h/2);},Math.max(256,width*2),height*2);
@@ -97,9 +98,12 @@ export class ElementWorld {
  setLayout(mode){
   if(!this.layouts[mode])return;
   this.mode=mode;this.clearHover();const now=performance.now();
-  this.morph={start:now,duration:this.reduced?0:1450,from:this.cards.map(c=>({position:c.object.position.clone(),quaternion:c.object.quaternion.clone()})),to:this.layouts[mode],blockFrom:this.blockOpacity,blockTo:mode==='Table'?1:0};
+  // Finish fading any visible Table outlines before moving the cards or camera.
+  const delay=!this.reduced&&mode!=='Table'?blockFadeDuration*this.blockOpacity:0;
+  this.morph={start:now,delay,duration:this.reduced?0:1450,from:this.cards.map(c=>({position:c.object.position.clone(),quaternion:c.object.quaternion.clone()})),to:this.layouts[mode],blockFrom:this.blockOpacity,blockTo:mode==='Table'?1:0};
   this.blocks.visible=true;if(this.reduced)this.finishMorph();
   this.savedView=null;this.overview();
+  if(this.cameraMove)this.cameraMove.start+=delay;
  }
  finishMorph(){if(!this.morph)return;for(let i=0;i<this.cards.length;i++){const t=this.morph.to[i];this.cards[i].object.position.copy(t.position);this.cards[i].object.quaternion.copy(t.quaternion);}this.blockOpacity=this.morph.blockTo;this.setBlockOpacity();this.morph=null;}
  setBlockOpacity(){for(const item of this.blockMaterials)item.material.opacity=item.opacity*this.blockOpacity;this.blocks.visible=this.blockOpacity>.002;}
@@ -201,8 +205,8 @@ export class ElementWorld {
  pause(value){this.paused=value;}
  render(now){
   if(this.paused||document.hidden)return;
-  if(this.morph){const t=this.morph.duration?Math.min(1,(now-this.morph.start)/this.morph.duration):1,amount=ease(t);for(let i=0;i<this.cards.length;i++){const card=this.cards[i],from=this.morph.from[i],to=this.morph.to[i];card.object.position.lerpVectors(from.position,to.position,amount);card.object.quaternion.slerpQuaternions(from.quaternion,to.quaternion,amount);}this.blockOpacity=THREE.MathUtils.lerp(this.morph.blockFrom,this.morph.blockTo,amount);this.setBlockOpacity();if(t===1)this.morph=null;}
-  if(this.cameraMove){const move=this.cameraMove,t=move.duration?Math.min(1,(now-move.start)/move.duration):1,amount=ease(t);this.controls.enabled=false;this.camera.position.lerpVectors(move.fromPosition,move.toPosition,amount);this.controls.target.lerpVectors(move.fromTarget,move.toTarget,amount);this.currentCenter={x:THREE.MathUtils.lerp(move.fromCenter.x,move.toCenter.x,amount),y:THREE.MathUtils.lerp(move.fromCenter.y,move.toCenter.y,amount)};this.viewOffset({centerX:this.currentCenter.x,centerY:this.currentCenter.y});this.camera.lookAt(this.controls.target);if(t===1){this.cameraMove=null;this.controls.enabled=true;}}
+  if(this.morph){const morph=this.morph,elapsed=now-morph.start,t=morph.duration?THREE.MathUtils.clamp((elapsed-morph.delay)/morph.duration,0,1):1,amount=ease(t);for(let i=0;i<this.cards.length;i++){const card=this.cards[i],from=morph.from[i],to=morph.to[i];card.object.position.lerpVectors(from.position,to.position,amount);card.object.quaternion.slerpQuaternions(from.quaternion,to.quaternion,amount);}this.blockOpacity=morph.delay?THREE.MathUtils.lerp(morph.blockFrom,0,ease(THREE.MathUtils.clamp(elapsed/morph.delay,0,1))):THREE.MathUtils.lerp(morph.blockFrom,morph.blockTo,amount);this.setBlockOpacity();if(t===1)this.morph=null;}
+  if(this.cameraMove){const move=this.cameraMove,t=move.duration?THREE.MathUtils.clamp((now-move.start)/move.duration,0,1):1,amount=ease(t);this.controls.enabled=false;this.camera.position.lerpVectors(move.fromPosition,move.toPosition,amount);this.controls.target.lerpVectors(move.fromTarget,move.toTarget,amount);this.currentCenter={x:THREE.MathUtils.lerp(move.fromCenter.x,move.toCenter.x,amount),y:THREE.MathUtils.lerp(move.fromCenter.y,move.toCenter.y,amount)};this.viewOffset({centerX:this.currentCenter.x,centerY:this.currentCenter.y});this.camera.lookAt(this.controls.target);if(t===1){this.cameraMove=null;this.controls.enabled=true;}}
   this.controls.update();
   if(this.dirtyPointer&&this.pointerInside&&!this.activePointers.size&&!this.cameraMove&&!this.morph){this.dirtyPointer=false;const n=this.pick(this.pointerScreen.x,this.pointerScreen.y);this.hovered=n;this.updateHighlights();this.canvas.style.cursor=n?'pointer':'grab';this.callbacks.onHover?.(n?this.elements[n-1]:null,this.pointerScreen.x,this.pointerScreen.y);}
   if(this.bloom.enabled)this.composer.render();else this.renderer.render(this.scene,this.camera);

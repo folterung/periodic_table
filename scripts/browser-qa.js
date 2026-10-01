@@ -12,13 +12,26 @@ try{
  if(!world)throw Error('WebGL failed to initialize');
  log(`Renderer: WebGL2; ${world.cards.length} independent cards. Viewport ${innerWidth} × ${innerHeight}.`);
  const identities=world.cards.map(c=>c.object);
- const origin=world.cards[0].object.position.clone();button('Helix').click();await frame();await frame();
- assert(!!world.morph,'Animated transition is active');let start=performance.now();while(performance.now()-start<250)await frame();
+ const origin=world.cards[0].object.position.clone(),tablePoses=world.cards.map(c=>({position:c.object.position.clone(),quaternion:c.object.quaternion.clone()})),tableCamera=world.camera.position.clone();
+ button('Helix').click();assert(!!world.morph&&world.morph.delay===300,'Leaving Table starts with a 300 ms outline fade');
+ let fadeStart=world.morph.start,fadeDelay=world.morph.delay;
+ world.render(fadeStart+fadeDelay/2);
+ assert(world.blockOpacity>0&&world.blockOpacity<1&&world.blocks.visible,'Outlines visibly fade before movement');
+ assert(world.cards.every((c,i)=>c.object.position.distanceTo(tablePoses[i].position)<1e-9&&c.object.quaternion.angleTo(tablePoses[i].quaternion)<1e-9),'All 118 card positions and orientations stay still during the fade');
+ assert(world.camera.position.distanceTo(tableCamera)<1e-9,'Automatic camera movement waits for the outline fade');
+ // Interrupting the fade must retain its current opacity and stationary cards.
+ const partialOpacity=world.blockOpacity;button('Sphere').click();
+ assert(world.blockOpacity===partialOpacity&&world.morph.delay===300*partialOpacity,'Rapid switching resumes the remaining fade without an opacity jump');
+ fadeStart=world.morph.start;fadeDelay=world.morph.delay;world.render(fadeStart+fadeDelay);
+ assert(!world.blocks.visible&&world.blockOpacity===0,'Outlines are fully hidden before the first movement');
+ assert(world.cards.every((c,i)=>c.object.position.distanceTo(tablePoses[i].position)<1e-9),'Cards remain in Table at the fade boundary');
+ world.render(fadeStart+fadeDelay+250);
  assert(world.cards[0].object.position.distanceTo(origin)>1,'Cards move during a transition');
  assert(world.cards.some(c=>c.object.quaternion.angleTo(world.layouts.Table[c.element.number-1].quaternion)>.01),'Orientations change during a transition');
- const midway=world.cards.map(c=>c.object.position.clone());button('Sphere').click();assert(world.cards.every((c,i)=>c.object.position.distanceTo(midway[i])<1e-9),'Rapid switching begins from current positions');
+ assert(!world.blocks.visible,'Outlines remain hidden throughout the shape change');
+ const midway=world.cards.map(c=>c.object.position.clone());button('Helix').click();assert(world.morph.delay===0,'Changing between spatial layouts adds no fade delay');assert(world.cards.every((c,i)=>c.object.position.distanceTo(midway[i])<1e-9),'Rapid switching begins from current positions');
  for(const mode of ['Grid','Table','Sphere','Helix','Grid'])button(mode).click();await settled(world);assert(world.mode==='Grid'&&!world.morph,'Rapid switches settle to final arrangement');
- log('Animated position/orientation morphs and rapid switching verified.');
+ log('Outline fade completes before card/camera movement; interrupted fades, animated morphs and rapid switching verified.');
  // Exercise the actual system-preference change listener; finish ongoing motion.
  world.motion.dispatchEvent(new MediaQueryListEvent('change',{matches:true,media:world.motion.media}));assert(world.reduced&&!world.controls.enableDamping,'Reduced motion disables tweening and inertia');
  const realBloom=world.bloom.enabled;world.bloom.enabled=false;

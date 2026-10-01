@@ -22,3 +22,5 @@ Live production checks verified all four arrangement controls, direct dragging t
 The reference video was reviewed before the rebuild: independent floating cards, Table/Helix/Sphere/Grid controls, formations through space and direct camera exploration informed this implementation.
 
 Production output is self-contained in `dist/`; it has no runtime CDN dependency, CSS camera sliders, or CSS-transformed board. Test output stays in `.qa-runtime/` and is excluded from publication.
+
+On 1 October 2026, the desktop browser suite passed after staging outgoing Table transitions: a 300 ms fade hides all block outlines and titles before any card position, card orientation, or automatic camera motion changes. Interrupted fades retain their current opacity, spatial-layout switches add no delay, and reduced-motion changes still finish immediately. All 472 layout/card picks and existing interaction checks passed.
