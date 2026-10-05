@@ -1,9 +1,21 @@
 import { elements } from '../dist/elements.js';
 import { colors, profileHTML, properties, valenceNote, massNote, matchElement } from './science.js';
+import { OrbitalLab } from './orbital-lab.js';
 const $=s=>document.querySelector(s);
-let world, selected=null, originFocus, browsing=false, mode='Table', unavailable=false;
+let world, selected=null, originFocus, browsing=false, mode='Table', unavailable=false, orbitalActive=false;
 const descriptions={Table:['01 / THE PERIODIC TABLE','118 elements. One connected world.'],Helix:['02 / THE HELIX','Follow a spiral through the elements.'],Sphere:['03 / THE SPHERE','A constellation of chemical identities.'],Grid:['04 / THE GRID','Explore every layer of the element field.']};
 function announce(message){$('#announcement').textContent=message;}
+const orbitalLab=new OrbitalLab(announce);
+function enterOrbitals(){
+ orbitalActive=true;world?.pause(true);world?.clearHover();$('#guide').close();toggleResults(false);$('#detail').hidden=true;$('#loading').hidden=true;$('#fallback').hidden=true;document.body.classList.remove('text-mode');document.body.classList.add('orbital-mode');$('#orbital-lab').hidden=false;
+ for(const b of document.querySelectorAll('button[data-layout]'))b.setAttribute('aria-pressed','false');$('#open-orbitals').setAttribute('aria-pressed','true');$('.skip').href='#electron-configuration';$('.skip').textContent='Edit electron configuration';orbitalLab.open();
+}
+function leaveOrbitals(){
+ orbitalActive=false;orbitalLab.close();document.body.classList.remove('orbital-mode');$('#orbital-lab').hidden=true;$('#open-orbitals').setAttribute('aria-pressed','false');$('.skip').href='#search';$('.skip').textContent='Find an element';$('#detail').hidden=selected===null;
+ if(unavailable)fallback('WebGL is unavailable in this browser. Explore all 118 elements and their full profiles below.',true);else{world?.pause(false);world?.resize();}
+}
+$('#open-orbitals').onclick=enterOrbitals;$('#fallback-orbitals').onclick=enterOrbitals;
+$('#electron-configuration').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('#configuration-form').requestSubmit();}});
 function toggleResults(open){$('#results').hidden=!open;$('#browse').setAttribute('aria-expanded',String(open));}
 for(const [name,color]of Object.entries(colors)) {
  $('#category').add(new Option(name,name));
@@ -31,6 +43,7 @@ $('#browse').onclick=()=>{browsing=$('#results').hidden;filter();toggleResults(b
 $('#close-results').onclick=()=>{browsing=false;toggleResults(false);$('#browse').focus();};
 $('#filter-toggle').onclick=()=>{const open=$('#filter-options').classList.toggle('open');$('#filter-toggle').setAttribute('aria-expanded',String(open));};
 function show(n,{focus=true}={}){
+ if(orbitalActive)document.querySelector('button[data-layout="Table"]').click();
  const e=elements[n-1];if(!e)return;
  if(selected===null)originFocus=document.activeElement;
  selected=n;$('#profile').style.setProperty('--color',colors[e.category]);$('#profile').innerHTML=profileHTML(e);$('#detail').hidden=false;$('#detail').scrollTop=0;$('#return').hidden=false;
@@ -50,9 +63,10 @@ $('#close-detail').onclick=()=>closeDetails();$('#return').onclick=()=>closeDeta
 $('#previous').onclick=()=>show(selected-1);$('#next').onclick=()=>show(selected+1);
 $('#overview').onclick=()=>{if(selected!==null)closeDetails(false);world?.overview();toggleResults(false);};
 $('#zoom-in').onclick=()=>world?.zoom(true);$('#zoom-out').onclick=()=>world?.zoom(false);
-for(const b of document.querySelectorAll('[data-layout]'))b.onclick=()=>{
+for(const b of document.querySelectorAll('button[data-layout]'))b.onclick=()=>{
+ if(orbitalActive)leaveOrbitals();
  mode=b.dataset.layout;world?.setLayout(mode);
- for(const button of document.querySelectorAll('[data-layout]'))button.setAttribute('aria-pressed',String(button===b));
+ for(const button of document.querySelectorAll('button[data-layout]'))button.setAttribute('aria-pressed',String(button===b));
  $('#mode-label').textContent=descriptions[mode][0];$('#mode-description').textContent=descriptions[mode][1];
  $('#arrangement-note').textContent=mode==='Table'?'Outlines mark electron blocks; card colors mark element families.':'Spatial visualization · Chemical periods and groups stay defined by the Table.';
  announce(`${mode} arrangement. All 118 elements remain in the world.`);
@@ -61,6 +75,7 @@ $('#legend-toggle').onclick=()=>{const open=$('#legend').hidden;$('#legend').hid
 $('#about').onclick=()=>$('#guide').showModal();$('#close-guide').onclick=()=>$('#guide').close();
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#guide').open&&selected!==null)closeDetails();});
 function fallback(reason,failed=false){
+ if(orbitalActive){orbitalActive=false;orbitalLab.close();$('#orbital-lab').hidden=true;document.body.classList.remove('orbital-mode');$('#open-orbitals').setAttribute('aria-pressed','false');$('.skip').href='#search';$('.skip').textContent='Find an element';}
  unavailable=failed;world?.pause(true);$('#guide').close();$('#fallback').hidden=false;document.body.classList.add('text-mode');$('#loading').hidden=true;$('#fallback-reason').textContent=reason;$('#resume-world').hidden=failed;
  if(!$('#fallback-list').children.length){
   for(const e of elements){const card=document.createElement('article');card.className='fallback-card';card.style.setProperty('--color',colors[e.category]);card.innerHTML=`<h2>${e.number} · ${e.symbol} · ${e.name}</h2><p>${e.category}</p><dl>${properties(e).map(([label,value,note])=>`<dt>${label}</dt><dd>${value} <small>(${note})</small></dd>`).join('')}</dl><details><summary>Scientific notes</summary><p>${valenceNote(e)}</p><p>${massNote(e)}</p></details>`;$('#fallback-list').append(card);}
@@ -86,3 +101,4 @@ try {
 if(document.modelContext?.registerTool)try{document.modelContext.registerTool({name:'locate_element',description:'Locate a chemical element in the current 3D arrangement and open its profile.',inputSchema:{type:'object',properties:{atomicNumber:{type:'integer',minimum:1,maximum:118}},required:['atomicNumber'],additionalProperties:false},annotations:{readOnlyHint:false},execute:({atomicNumber})=>{if(!Number.isInteger(atomicNumber)||atomicNumber<1||atomicNumber>118)throw Error('Use an atomic number from 1 to 118.');show(atomicNumber);return elements[atomicNumber-1];}});}catch{}
 export { show, closeDetails, filter };
 export const getWorld=()=>world;
+export const getOrbitalLab=()=>orbitalLab;

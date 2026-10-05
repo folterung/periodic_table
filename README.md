@@ -2,18 +2,22 @@
 
 A self-contained Three.js WebGL periodic table with 118 independent cards and animated Table, Helix, Sphere, and Grid arrangements. Existing family colors and scientific data are retained.
 
+The Orbitals tab accepts typed electron configurations such as `1s2 2s2 2p4`, Unicode superscripts, caret exponents, and noble-gas shorthand such as `[Ar] 4s2 3d6`. It expands cores, validates subshell capacities and shell quantum numbers, and shows totals, shell populations, and a Hund-filling occupancy diagram. Select a subshell and orbital box to rotate, pan, and zoom its real WebGL angular surface; optionally overlay other occupied orbitals in that subshell. Configuration and camera state persist across tab changes.
+
 ## Development
 
 Install dependencies with `pnpm install`, then run `pnpm build` and `pnpm dev`. The local server runs at http://127.0.0.1:4173. Source is in `src/`; static output is in `dist/`. No external runtime CDN is required. `.openai/hosting.json` identifies the existing Sites project.
 
 ## Verification
 
-`pnpm verify` checks all retained scientific records against the original source commit, four layout geometries, every block-outline corner, and search and filter semantics.
+`pnpm verify` checks all retained scientific records against the original source commit, four layout geometries, every block-outline corner, search and filter semantics, configuration parsing and filling, and all 16 finite angular orbital surfaces.
 
-`node scripts/build-qa.mjs` creates an isolated browser test page at http://127.0.0.1:4173/__qa/. It exercises the actual WebGL renderer, all 472 focused raycast picks, all profile fields, animation continuity, camera controls, touch input event paths, hover previews, reduced motion, selection persistence, and the accessible view. Test at desktop, tablet and phone viewport sizes. The QA output is excluded from production. `/__qa/fallback.html` simulates a browser without WebGL to verify the accessible fallback.
+`node scripts/build-qa.mjs` creates an isolated browser test page at http://127.0.0.1:4173/__qa/. It exercises the actual WebGL renderer, all 472 focused raycast picks, all profile fields, animation continuity, camera controls, touch input event paths, hover previews, reduced motion, selection persistence, and the accessible view. It also tests configuration formats and errors, all 16 selectable orbital surfaces, overlays, focus retention, camera reset, touch controls, and tab switching. Test at desktop, tablet and phone viewport sizes. The QA output is excluded from production. `/__qa/fallback.html` simulates a browser without WebGL to verify the accessible fallback, including the orbital occupancy diagram.
 
 ## Scientific conventions
 
 Weights and uncertainties are retained from the saved CIAAW source, including 2024 revisions. Bracketed isotope mass numbers use the IUPAC May 2022 edition. Main-group valence counts use the outer shell; transition-metal values use formal s + d counts; detached series use the outermost shell, with lawrencium assigned 7s²7p¹. Source links and qualifications are in the Guide and profiles.
 
 Alternative arrangements are spatial visualizations and do not redefine chemical groups or periods. Helium is enclosed in a separate pink s-block outline in Table mode. Detached f-series include all lanthanides and actinides under the existing compact-table convention.
+
+Orbital surfaces are normalized angular polar plots based on real spherical harmonics. Radial wavefunctions and radial nodes are omitted; the node count is stated separately. Color shades distinguish phase. Filling boxes illustrate Hund's rule and opposite paired spins using a real orbital basis, rather than establish a unique electron location. Arbitrary allowed occupancies are accepted; the tool does not certify ground states or infer ionic charge from electron count. OpenStax and angular-function references are linked in the tab.

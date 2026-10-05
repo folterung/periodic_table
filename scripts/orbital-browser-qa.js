@@ -1,0 +1,29 @@
+import { getOrbitalLab, getWorld, show, closeDetails } from '../src/main.js';
+const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+export async function checkOrbitals(log,assert){
+ const lab=getOrbitalLab(),table=getWorld(),input=document.querySelector('#electron-configuration');
+ document.querySelector('#open-orbitals').click();await lab.initializing;await frame();await frame();
+ assert(lab.active&&table.paused&&document.body.classList.contains('orbital-mode'),'Orbitals tab opens and pauses the table');
+ assert(document.querySelector('#orbital-lab').dataset.renderer==='webgl','Orbital viewer initializes real WebGL');const identity=lab.world;
+ const submit=raw=>{input.value=raw;document.querySelector('#configuration-form').requestSubmit();};
+ for(const [raw,total,key]of [['1s1',1,'1s'],['1s² 2s² 2p⁴',8,'2p'],['[Ar] 4s2 3d6',26,'3d'],['[Xe] 6s2 4f7',63,'4f'],['[Og]',118,'7p']]){
+  submit(raw);await frame();await frame();assert(lab.configuration.total===total&&document.querySelector('#configuration-total').textContent===String(total),'Configuration count: '+raw);assert(lab.entry.key===key,'Selected subshell: '+raw);assert(lab.world.renderer.info.render.triangles>100,'Orbital has rendered triangles: '+raw);assert(lab.world.renderer.getContext().getError()===0,'Orbital WebGL has no errors: '+raw);
+ }
+ submit('1s2 2p6 3d10 4f14');
+ let inspected=0;for(const key of ['1s','2p','3d','4f']){
+  document.querySelector(`[data-subshell="${key}"]`).click();
+  const count=document.querySelector('#orbital-diagram').children.length;
+  for(let i=0;i<count;i++){document.querySelector('#orbital-diagram').children[i].focus({preventScroll:true});document.querySelector('#orbital-diagram').children[i].click();await frame();const selected=document.querySelector('#orbital-diagram').children[i];assert(lab.world.canvas.dataset.orbital===String(i),'Orbitals can be selected independently');assert(selected.getAttribute('aria-pressed')==='true'&&document.activeElement===selected,'Selected orbital preserves keyboard focus and is accessible');assert(lab.world.renderer.info.render.triangles>100,'Selected angular surface renders');inspected++;}
+  if(!document.querySelector('#orbital-overlay').checked)document.querySelector('#orbital-overlay').click();assert(lab.world.model.children.length===lab.entry.occupancy.length,'Overlay includes each occupied orbital');document.querySelector('#orbital-overlay').click();
+ }
+ assert(inspected===16,'All 16 s/p/d/f orbital shapes inspected');
+ const previous=lab.configuration,previousOrbital=lab.world.canvas.dataset.subshell;
+ for(const invalid of ['2p7','2d1','[Ne] 2p5','<script>bad</script>']){submit(invalid);assert(input.getAttribute('aria-invalid')==='true'&&!document.querySelector('#configuration-error').hidden,'Invalid input explained: '+invalid);assert(lab.configuration===previous&&lab.world.canvas.dataset.subshell===previousOrbital,'Invalid input retains the last valid model');}
+ input.value='[Ar] 4s2 3d6';input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',ctrlKey:true,bubbles:true}));assert(lab.configuration.total===26&&!input.hasAttribute('aria-invalid'),'Keyboard shortcut submits and clears the error');
+ const canvas=lab.world.canvas;let camera=lab.world.camera.position.clone();canvas.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert(camera.distanceTo(lab.world.camera.position)>0,'Keyboard rotates the orbital');let distance=lab.world.controls.getDistance();canvas.dispatchEvent(new KeyboardEvent('keydown',{key:'+',bubbles:true}));assert(lab.world.controls.getDistance()<distance,'Keyboard zooms the orbital');document.querySelector('#orbital-reset').click();assert(lab.world.camera.position.distanceTo({x:4.3,y:3.1,z:5.8})<1e-6,'Reset returns to the initial orbital view');
+ const capture=canvas.setPointerCapture,release=canvas.releasePointerCapture;canvas.setPointerCapture=()=>{};canvas.releasePointerCapture=()=>{};const rect=canvas.getBoundingClientRect(),cx=rect.left+rect.width*.5,cy=rect.top+rect.height*.5;
+ const pointer=(type,id,x,y)=>canvas.dispatchEvent(new PointerEvent(type,{pointerId:id,pointerType:'touch',clientX:x,clientY:y,button:0,buttons:type==='pointerup'?0:1,bubbles:true}));
+ camera=lab.world.camera.position.clone();pointer('pointerdown',1,cx-30,cy);pointer('pointermove',1,cx+35,cy+30);pointer('pointerup',1,cx+35,cy+30);lab.world.controls.update();assert(camera.distanceTo(lab.world.camera.position)>.01,'Touch rotates the orbital');distance=lab.world.controls.getDistance();const beforeTarget=lab.world.controls.target.clone();pointer('pointerdown',1,cx-50,cy);pointer('pointerdown',2,cx+50,cy);pointer('pointermove',1,cx-35,cy+25);pointer('pointermove',2,cx+90,cy+25);pointer('pointerup',1,cx-35,cy+25);pointer('pointerup',2,cx+90,cy+25);lab.world.controls.update();assert(Math.abs(distance-lab.world.controls.getDistance())>.01,'Touch pinches the orbital');assert(beforeTarget.distanceTo(lab.world.controls.target)>.01,'Two-finger touch pans the orbital');canvas.setPointerCapture=capture;canvas.releasePointerCapture=release;
+ document.querySelector('button[data-layout="Table"]').click();assert(!lab.active&&!table.paused&&table.cards.length===118,'Returning to Table resumes all 118 cards');document.querySelector('#open-orbitals').click();await lab.initializing;assert(lab.world===identity&&lab.configuration.total===26,'Tab switching preserves the configuration and renderer');show(26,{focus:false});assert(!lab.active&&!table.paused&&table.selected===26&&!document.querySelector('#detail').hidden,'Element selection from Orbitals returns to Table and opens the profile');closeDetails(false);
+ log('Orbitals: all 16 angular shapes rendered; input formats, noble-gas shorthand, capacity errors, filling boxes, overlay, camera, touch and tab switching verified.');
+}
