@@ -13,8 +13,12 @@ const ease=t=>t*t*(3-2*t);
 const blockFadeDuration=300;
 function texture(draw,width=384,height=492){const c=document.createElement('canvas');c.width=width;c.height=height;draw(c.getContext('2d'),width,height);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;}
 function labelMesh(text,color,width=250,height=40){
- const map=texture((ctx,w,h)=>{ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`500 ${h*.72}px "Segoe UI", sans-serif`;ctx.fillText(text,w/2,h/2);},Math.max(256,width*2),height*2);
+ const map=texture((ctx,w,h)=>{ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`600 ${h*.68}px "Segoe UI", sans-serif`;ctx.shadowColor='#08111f';ctx.shadowBlur=5;ctx.fillText(text,w/2,h/2);},width*3,height*3);
  return new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map,transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));
+}
+function axisLabel(number){
+ const map=texture((ctx,w,h)=>{ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${h*.62}px "Segoe UI", sans-serif`;ctx.lineJoin='round';ctx.lineWidth=9;ctx.strokeStyle='#08111f';ctx.strokeText(number,w/2,h/2);ctx.fillStyle='#eef6ff';ctx.fillText(number,w/2,h/2);},192,192);
+ const label=new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,depthWrite:false,toneMapped:false,fog:false}));label.scale.set(64,64,1);return label;
 }
 function frameGeometry(width,height,thickness=2,depth=7){
  return mergeGeometries([
@@ -54,14 +58,14 @@ export class ElementWorld {
    const color=colors[e.category], object=new THREE.Group();object.name=`${e.number} ${e.symbol} ${e.name}`;object.userData.element=e;
    const map=texture((ctx,w,h)=>{
     const scale=w/cardSize.width;ctx.scale(scale,scale);
-    const fill=ctx.createLinearGradient(0,0,140,124);fill.addColorStop(0,'#162b42ed');fill.addColorStop(1,'#0a1929d9');ctx.fillStyle=fill;ctx.fillRect(0,0,140,124);
-    ctx.fillStyle=color;ctx.globalAlpha=.09;ctx.fillRect(0,0,140,124);ctx.globalAlpha=1;
-    ctx.font='500 13px "Segoe UI", sans-serif';ctx.textAlign='left';ctx.fillText(e.number,11,21);
-    ctx.fillStyle=color;ctx.font='650 43px "Segoe UI", sans-serif';ctx.textAlign='center';ctx.fillText(e.symbol,70,72);
-    ctx.fillStyle='#e4f1fa';let font=12;ctx.font=`500 ${font}px "Segoe UI", sans-serif`;while(ctx.measureText(e.name).width>124){font-=.5;ctx.font=`500 ${font}px "Segoe UI", sans-serif`;}ctx.fillText(e.name,70,95);
-    ctx.fillStyle='#9fb8cb';ctx.font='400 9px "Segoe UI", sans-serif';ctx.fillText(e.mass,70,112);
-    ctx.fillStyle=color;ctx.globalAlpha=.52;ctx.fillRect(11,119,118,1);
-   },this.mobile?280:420,this.mobile?248:372);
+    const fill=ctx.createLinearGradient(0,0,cardSize.width,cardSize.height);fill.addColorStop(0,'#183149fa');fill.addColorStop(1,'#0b1b2bf2');ctx.fillStyle=fill;ctx.fillRect(0,0,cardSize.width,cardSize.height);
+    ctx.fillStyle=color;ctx.globalAlpha=.08;ctx.fillRect(0,0,cardSize.width,cardSize.height);ctx.globalAlpha=1;
+    ctx.textBaseline='alphabetic';ctx.textAlign='left';ctx.fillStyle='#d6e7f3';ctx.font='600 13px "Segoe UI", sans-serif';ctx.fillText(e.mass,11,23);
+    ctx.fillStyle=color;ctx.font='700 54px "Segoe UI", sans-serif';ctx.textAlign='center';ctx.fillText(e.symbol,cardSize.width/2,81);
+    ctx.fillStyle='#f2f7ff';ctx.font='600 17px "Segoe UI", sans-serif';ctx.fillText(e.number,cardSize.width/2,107);
+    ctx.fillStyle='#e4f1fa';let font=14;ctx.font=`600 ${font}px "Segoe UI", sans-serif`;while(ctx.measureText(e.name).width>cardSize.width-20){font-=.5;ctx.font=`600 ${font}px "Segoe UI", sans-serif`;}ctx.fillText(e.name,cardSize.width/2,132);
+    ctx.fillStyle=color;ctx.globalAlpha=.5;ctx.fillRect(11,141,cardSize.width-22,1);
+   },cardSize.width*(this.mobile?2:3),cardSize.height*(this.mobile?2:3));
    const material=new THREE.MeshBasicMaterial({map,transparent:true,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
    const face=new THREE.Mesh(faceGeometry,material);face.position.z=4.2;face.userData.number=e.number;
    const back=new THREE.Mesh(faceGeometry,material);back.position.z=-4.2;back.rotation.y=Math.PI;back.userData.number=e.number;
@@ -72,19 +76,31 @@ export class ElementWorld {
   });
  }
  createBlocks(){
-  this.blocks=new THREE.Group();this.blocks.name='Electron block outlines and table axes';this.blockMaterials=[];
+  this.blocks=new THREE.Group();this.blocks.name='Electron block outlines and table axes';this.blockMaterials=[];this.axisLabels=[];
   for(const region of blockRegions){
    const group=new THREE.Group();group.name=region.name;
    const mat=new THREE.MeshBasicMaterial({color:region.color,transparent:true,opacity:.95,toneMapped:false});this.blockMaterials.push({material:mat,opacity:.95});
    const geometry=new THREE.ExtrudeGeometry(blockOutlineShape(region.points),{depth:4,bevelEnabled:false,curveSegments:12});
    const outline=new THREE.Mesh(geometry,mat);outline.name=`${region.name} continuous outline`;outline.position.z=8;group.add(outline);
-   const text=labelMesh(region.name,region.color,region.name.includes('series')?420:region.name.includes('He')?260:245,52);text.position.set(...region.label,12);group.add(text);this.blockMaterials.push({material:text.material,opacity:1});this.blocks.add(group);
+   const text=labelMesh(region.name,region.color,region.name.includes('series')?420:region.name.includes('He')?260:275,64);text.position.set(...region.label,12);group.add(text);this.blockMaterials.push({material:text.material,opacity:1});this.blocks.add(group);
   }
-  for(let group=1;group<=18;group++){const label=labelMesh(String(group),'#839fb5',36,30);label.position.set(tablePoint(group,1).x,780,0);this.blocks.add(label);this.blockMaterials.push({material:label.material,opacity:1});}
-  for(let period=1;period<=7;period++){const label=labelMesh(String(period),'#839fb5',36,30);label.position.set(-1470,tablePoint(1,period).y,0);this.blocks.add(label);this.blockMaterials.push({material:label.material,opacity:1});}
-  for(const [row,title]of [[9,'6 · LANTHANIDES'],[10,'7 · ACTINIDES']]){const label=labelMesh(title,'#a38abc',275,30);label.position.set(-1300,tablePoint(1,row).y,0);this.blocks.add(label);this.blockMaterials.push({material:label.material,opacity:1});}
+  for(let group=1;group<=18;group++){
+   const firstRow=Math.min(...this.elements.filter(e=>e.col===group&&e.row<=7).map(e=>e.row));
+   const label=axisLabel(String(group)),anchor=tablePoint(group,firstRow).add(v(0,cardSize.height/2+6,14));label.name=`Group ${group}`;label.position.copy(anchor).add(v(0,52,0));this.blocks.add(label);this.axisLabels.push({label,anchor,axis:'group'});this.blockMaterials.push({material:label.material,opacity:1});
+  }
+  for(let period=1;period<=7;period++){const label=axisLabel(String(period)),anchor=tablePoint(1,period).add(v(-cardSize.width/2-6,0,14));label.name=`Period ${period}`;label.position.copy(anchor).add(v(-52,0,0));this.blocks.add(label);this.axisLabels.push({label,anchor,axis:'period'});this.blockMaterials.push({material:label.material,opacity:1});}
+  for(const [row,title]of [[9,'6 · LANTHANIDES'],[10,'7 · ACTINIDES']]){const label=labelMesh(title,'#d9b8ee',275,42);label.position.set(tablePoint(1,row).x+80,tablePoint(1,row).y,12);this.blocks.add(label);this.blockMaterials.push({material:label.material,opacity:1});}
   for(const [row,title]of [[6,'57–71'],[7,'89–103']]){const label=labelMesh(title,'#bc64ff',110,30);label.position.copy(tablePoint(3,row));this.blocks.add(label);this.blockMaterials.push({material:label.material,opacity:1});}
-  this.scene.add(this.blocks);
+  this.scene.add(this.blocks);this.tableBounds=new THREE.Box3().setFromObject(this.blocks).expandByScalar(25);
+ }
+ updateAxisLabels(){
+  if(!this.blocks.visible)return;this.camera.updateMatrixWorld();
+  const pixelHeight=this.canvas.clientWidth<=360?20:this.canvas.clientWidth<=760?22:26;
+  for(const {label,anchor,axis}of this.axisLabels){
+   const depth=Math.abs(anchor.clone().applyMatrix4(this.camera.matrixWorldInverse).z);
+   const unitsPerPixel=2*depth*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2))/this.canvas.clientHeight;
+   const size=Math.max(64,pixelHeight*unitsPerPixel);label.scale.set(size,size,1);label.position.copy(anchor).add(axis==='group'?v(0,size*.65,0):v(-size*.65,0,0));
+  }
  }
  createEnvironment(){
   const floor=new THREE.GridHelper(12000,60,'#1b4a5b','#112d42');floor.position.y=-2100;floor.material.transparent=true;floor.material.opacity=.23;floor.material.depthWrite=false;this.scene.add(floor);
@@ -107,12 +123,12 @@ export class ElementWorld {
  setBlockOpacity(){for(const item of this.blockMaterials)item.material.opacity=item.opacity*this.blockOpacity;this.blocks.visible=this.blockOpacity>.002;}
  layoutBounds(){
   const bounds=new THREE.Box3();this.layouts[this.mode].forEach(target=>{for(const x of [-1,1])for(const y of [-1,1])for(const z of [-1,1])bounds.expandByPoint(v(x*cardSize.width/2,y*cardSize.height/2,z*5).applyQuaternion(target.quaternion).add(target.position));});bounds.expandByScalar(35);
-  if(this.mode==='Table'){bounds.expandByPoint(v(-1510,-810,0));bounds.expandByPoint(v(1460,810,0));}return bounds;
+  if(this.mode==='Table')bounds.union(this.tableBounds);return bounds;
  }
  safeArea(detail=false){
   const rect=this.canvas.getBoundingClientRect(),header=document.querySelector('.finder')?.getBoundingClientRect(),footer=document.querySelector('.bottom-hud')?.getBoundingClientRect();
-  let left=24,right=rect.width-24,top=header?header.bottom+30:120,bottom=footer?footer.top-55:rect.height-140;
-  if(rect.width<=760){left=18;right=rect.width-18;top=(header?.bottom??175)+45;bottom=(footer?.top??rect.height-140)-48;}
+  let left=20,right=rect.width-20,top=header?header.bottom+22:120,bottom=footer?footer.top-16:rect.height-140;
+  if(rect.width<=760){left=8;right=rect.width-8;top=(header?.bottom??175)+34;bottom=(footer?.top??rect.height-140)-30;}
   if(detail){const panel=document.querySelector('#detail')?.getBoundingClientRect();if(panel&&panel.height){if(rect.width<=760)bottom=panel.top-15;else right=panel.left-35;}else if(rect.width>760)right-=350;}
   top=Math.min(top,rect.height*.45);bottom=Math.max(bottom,top+120);return{left,right,top,bottom,width:Math.max(100,right-left),height:Math.max(120,bottom-top),centerX:(left+right)/2,centerY:(top+bottom)/2};
  }
@@ -206,6 +222,7 @@ export class ElementWorld {
   if(this.morph){const morph=this.morph,elapsed=now-morph.start,t=morph.duration?THREE.MathUtils.clamp((elapsed-morph.delay)/morph.duration,0,1):1,amount=ease(t);for(let i=0;i<this.cards.length;i++){const card=this.cards[i],from=morph.from[i],to=morph.to[i];card.object.position.lerpVectors(from.position,to.position,amount);card.object.quaternion.slerpQuaternions(from.quaternion,to.quaternion,amount);}this.blockOpacity=morph.delay?THREE.MathUtils.lerp(morph.blockFrom,0,ease(THREE.MathUtils.clamp(elapsed/morph.delay,0,1))):THREE.MathUtils.lerp(morph.blockFrom,morph.blockTo,amount);this.setBlockOpacity();if(t===1)this.morph=null;}
   if(this.cameraMove){const move=this.cameraMove,t=move.duration?THREE.MathUtils.clamp((now-move.start)/move.duration,0,1):1,amount=ease(t);this.controls.enabled=false;this.camera.position.lerpVectors(move.fromPosition,move.toPosition,amount);this.controls.target.lerpVectors(move.fromTarget,move.toTarget,amount);this.currentCenter={x:THREE.MathUtils.lerp(move.fromCenter.x,move.toCenter.x,amount),y:THREE.MathUtils.lerp(move.fromCenter.y,move.toCenter.y,amount)};this.viewOffset({centerX:this.currentCenter.x,centerY:this.currentCenter.y});this.camera.lookAt(this.controls.target);if(t===1){this.cameraMove=null;this.controls.enabled=true;}}
   this.controls.update();
+  this.updateAxisLabels();
   if(this.dirtyPointer&&this.pointerInside&&!this.activePointers.size&&!this.cameraMove&&!this.morph){this.dirtyPointer=false;const n=this.pick(this.pointerScreen.x,this.pointerScreen.y);this.hovered=n;this.updateHighlights();this.canvas.style.cursor=n?'pointer':'grab';this.callbacks.onHover?.(n?this.elements[n-1]:null,this.pointerScreen.x,this.pointerScreen.y);}
   if(this.bloom.enabled)this.composer.render();else this.renderer.render(this.scene,this.camera);
   const elapsed=now-this.lastFrame;this.lastFrame=now;this.frames++;

@@ -2,6 +2,7 @@ import { getWorld, show, closeDetails, filter } from '../src/main.js';
 import { elements } from '../dist/elements.js';
 import { properties } from '../src/science.js';
 import { checkOrbitals } from './orbital-browser-qa.js';
+import { checkCardPresentation } from './card-browser-qa.js';
 const out=document.createElement('pre');out.id='qa-results';Object.assign(out.style,{position:'fixed',left:'12px',bottom:'12px',maxHeight:'160px',overflow:'auto',zIndex:9999,background:'#021016f5',border:'1px solid #75dfc1',color:'#caffed',padding:'14px',fontSize:'11px',maxWidth:'95vw'});document.body.append(out);
 const logs=[],failures=[];function log(s){logs.push(s);out.textContent=logs.join('\n');out.scrollTop=out.scrollHeight;}
 function assert(check,message){if(!check){failures.push(message);log('FAIL: '+message);}}
@@ -12,6 +13,7 @@ const world=getWorld();
 try{
  if(!world)throw Error('WebGL failed to initialize');
  log(`Renderer: WebGL2; ${world.cards.length} independent cards. Viewport ${innerWidth} × ${innerHeight}.`);
+ checkCardPresentation(world,assert,log);
  const identities=world.cards.map(c=>c.object);
  const origin=world.cards[0].object.position.clone(),tablePoses=world.cards.map(c=>({position:c.object.position.clone(),quaternion:c.object.quaternion.clone()})),tableCamera=world.camera.position.clone();
  button('Helix').click();assert(!!world.morph&&world.morph.delay===300,'Leaving Table starts with a 300 ms outline fade');

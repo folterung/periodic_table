@@ -1,5 +1,5 @@
 import { Vector3, Object3D, Quaternion } from 'three';
-export const cardSize={width:140,height:124,stepX:160,stepY:146};
+export const cardSize={width:164,height:148,stepX:184,stepY:170};
 export const tablePoint=(col,row)=>new Vector3((col-9.5)*cardSize.stepX,(5.5-row)*cardSize.stepY,0);
 export function makeLayouts(elements) {
  const layouts={Table:[],Helix:[],Sphere:[],Grid:[]}, dummy=new Object3D();
@@ -14,7 +14,7 @@ export function makeLayouts(elements) {
   dummy.position.copy(sphere);dummy.lookAt(sphere.clone().multiplyScalar(2));
   layouts.Sphere.push({position:sphere,quaternion:dummy.quaternion.clone()});
   const layer=Math.floor(i/30),column=i%6,row=Math.floor((i%30)/6);
-  const grid=new Vector3((column-2.5)*420,(2-row)*420,(layer-1.5)*650);
+  const grid=new Vector3((column-2.5)*370,(2-row)*350,(layer-1.5)*580);
   dummy.rotation.set(0, (column-2.5)*.055, (2-row)*.012);
   layouts.Grid.push({position:grid,quaternion:dummy.quaternion.clone()});
  });
@@ -29,5 +29,5 @@ export const blockRegions=[
  {name:'d-block',color:'#ff951f',points:[[x(3)-halfW,y(4)+halfH],[x(12)+halfW,y(4)+halfH],[x(12)+halfW,y(7)-halfH],[x(3)-halfW,y(7)-halfH]],label:[(x(3)+x(12))/2,y(7)-halfH-42],members:e=>e.group>=3&&e.group<=12},
  {name:'p-block',color:'#497bff',points:[[x(13)-halfW,y(2)+halfH],[x(18)+halfW,y(2)+halfH],[x(18)+halfW,y(7)-halfH],[x(13)-halfW,y(7)-halfH]],label:[(x(13)+x(18))/2,y(7)-halfH-42],members:e=>e.group>=13&&e.number!==2},
  {name:'f-block series*',color:'#bc64ff',points:[[x(3)-halfW,y(9)+halfH],[x(17)+halfW,y(9)+halfH],[x(17)+halfW,y(10)-halfH],[x(3)-halfW,y(10)-halfH]],label:[(x(3)+x(17))/2,y(10)-halfH-42],members:e=>e.row>=9},
- {name:'s-block · He',color:'#ff38bc',points:[[x(18)-halfW,y(1)+halfH],[x(18)+halfW,y(1)+halfH],[x(18)+halfW,y(1)-halfH],[x(18)-halfW,y(1)-halfH]],label:[x(18),y(1)+halfH+34],members:e=>e.number===2}
+ {name:'s-block · He',color:'#ff38bc',points:[[x(18)-halfW,y(1)+halfH],[x(18)+halfW,y(1)+halfH],[x(18)+halfW,y(1)-halfH],[x(18)-halfW,y(1)-halfH]],label:[x(18)-250,y(1)+halfH+30],members:e=>e.number===2}
 ];

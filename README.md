@@ -2,6 +2,8 @@
 
 A self-contained Three.js WebGL periodic table with 118 independent cards and animated Table, Helix, Sphere, and Grid arrangements. Existing family colors and scientific data are retained.
 
+Element cards show mass at the top-left, a large central symbol, atomic number beneath it, and the element name at the bottom. Table group and period numbers face the camera and retain a readable screen size. The header uses an element-style E / 118 mark and credits Rhesa Warnock. [Before-and-after screenshots](docs/review/README.md) document the presentation changes.
+
 The Orbitals tab accepts typed electron configurations such as `1s2 2s2 2p4`, Unicode superscripts, caret exponents, and noble-gas shorthand such as `[Ar] 4s2 3d6`. It expands cores, validates subshell capacities and shell quantum numbers, and shows totals, shell populations, and a Hund-filling occupancy diagram. Overall view opens by default with every occupied orbital around a shared nucleus. Hide subshell layers to see inside, restore all layers, or click a 3D surface to inspect its orbital. Select a subshell and orbital box to rotate, pan, and zoom its real WebGL angular surface; optionally overlay other occupied orbitals in that subshell. Overall view returns to the complete model. Configuration, view mode, and layer visibility persist across tab changes.
 
 ## Development
@@ -12,7 +14,7 @@ Install dependencies with `pnpm install`, then run `pnpm build` and `pnpm dev`. 
 
 `pnpm verify` checks all retained scientific records against the original source commit, four layout geometries, every block-outline corner, search and filter semantics, configuration parsing and filling, all 16 finite angular orbital surfaces, and exact electron coverage and layer filtering in Overall view.
 
-`node scripts/build-qa.mjs` creates an isolated browser test page at http://127.0.0.1:4173/__qa/. It exercises the actual WebGL renderer, all 472 focused raycast picks, all profile fields, animation continuity, camera controls, touch input event paths, hover previews, reduced motion, selection persistence, and the accessible view. It also tests configuration formats and errors, all 16 selectable orbital surfaces, overlays, focus retention, camera reset, touch controls, and tab switching. Test at desktop, tablet and phone viewport sizes. The QA output is excluded from production. `/__qa/fallback.html` simulates a browser without WebGL to verify the accessible fallback, including the orbital occupancy diagram.
+`node scripts/build-qa.mjs` creates an isolated browser test page at http://127.0.0.1:4173/__qa/. It exercises the actual WebGL renderer, all 472 focused raycast picks, all profile fields, animation continuity, camera controls, touch input event paths, hover previews, reduced motion, selection persistence, and the accessible view. It measures actual projected numeral ink for all 25 table-axis labels, checking readability, viewport containment, and separation from cards and other numerals. It also tests configuration formats and errors, all 16 selectable orbital surfaces, overlays, focus retention, camera reset, touch controls, and tab switching. Test at desktop, tablet and phone viewport sizes. The QA output is excluded from production. `/__qa/fallback.html` simulates a browser without WebGL to verify the accessible fallback, including the orbital occupancy diagram.
 
 ## Scientific conventions
 
