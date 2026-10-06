@@ -10,6 +10,10 @@ The Orbitals tab accepts typed electron configurations such as `1s2 2s2 2p4`, Un
 
 Install dependencies with `pnpm install`, then run `pnpm build` and `pnpm dev`. The local server runs at http://127.0.0.1:4173. Source is in `src/`; static output is in `dist/`. No external runtime CDN is required. `.openai/hosting.json` identifies the existing Sites project.
 
+## GitHub Pages
+
+[Publishing instructions](docs/github-pages.md) explain the one-time repository settings for an administrator. The **Publish Element Atlas** workflow builds and verifies pull requests, then publishes `dist/` after successful updates to `main` once Pages is enabled. The expected site address is https://folterung.github.io/periodic_table/.
+
 ## Verification
 
 `pnpm verify` checks all retained scientific records against the original source commit, four layout geometries, every block-outline corner, search and filter semantics, configuration parsing and filling, all 16 finite angular orbital surfaces, and exact electron coverage and layer filtering in Overall view.
