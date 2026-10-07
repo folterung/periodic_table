@@ -6,15 +6,18 @@ let world, selected=null, originFocus, browsing=false, mode='Table', unavailable
 const descriptions={Table:['01 / THE PERIODIC TABLE','118 elements. One connected world.'],Helix:['02 / THE HELIX','Follow a spiral through the elements.'],Sphere:['03 / THE SPHERE','A constellation of chemical identities.'],Grid:['04 / THE GRID','Explore every layer of the element field.']};
 function announce(message){$('#announcement').textContent=message;}
 const orbitalLab=new OrbitalLab(announce);
-function enterOrbitals(){
- orbitalActive=true;world?.pause(true);world?.clearHover();$('#guide').close();toggleResults(false);$('#detail').hidden=true;$('#loading').hidden=true;$('#fallback').hidden=true;document.body.classList.remove('text-mode');document.body.classList.add('orbital-mode');$('#orbital-lab').hidden=false;
- for(const b of document.querySelectorAll('button[data-layout]'))b.setAttribute('aria-pressed','false');$('#open-orbitals').setAttribute('aria-pressed','true');$('.skip').href='#electron-configuration';$('.skip').textContent='Edit electron configuration';orbitalLab.open();
+function enterOrbitals(focus='input'){
+ orbitalActive=true;world?.finishCamera();world?.pause(true);world?.clearHover();$('#guide').close();toggleResults(false);$('#detail').hidden=true;$('#loading').hidden=true;$('#fallback').hidden=true;document.body.classList.remove('text-mode');document.body.classList.add('orbital-mode');$('#orbital-lab').hidden=false;
+ for(const b of document.querySelectorAll('button[data-layout]'))b.setAttribute('aria-pressed','false');$('#open-orbitals').setAttribute('aria-pressed','true');$('.skip').href='#electron-configuration';$('.skip').textContent='Edit electron configuration';orbitalLab.open(focus);
 }
 function leaveOrbitals(){
  orbitalActive=false;orbitalLab.close();document.body.classList.remove('orbital-mode');$('#orbital-lab').hidden=true;$('#open-orbitals').setAttribute('aria-pressed','false');$('.skip').href='#search';$('.skip').textContent='Find an element';$('#detail').hidden=selected===null;
- if(unavailable)fallback('WebGL is unavailable in this browser. Explore all 118 elements and their full profiles below.',true);else{world?.pause(false);world?.resize();}
+ if(unavailable)fallback('WebGL is unavailable in this browser. Explore all 118 elements and their full profiles below.',true);else{world?.resize(false);world?.pause(false);}window.scrollTo(0,0);
 }
-$('#open-orbitals').onclick=enterOrbitals;$('#fallback-orbitals').onclick=enterOrbitals;
+$('#open-orbitals').onclick=()=>enterOrbitals();$('#fallback-orbitals').onclick=()=>enterOrbitals();
+$('#profile').addEventListener('click',event=>{
+ if(event.target.closest('#view-element-orbitals')&&selected!==null){orbitalLab.loadElement(elements[selected-1]);enterOrbitals('viewer');}
+});
 $('#electron-configuration').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('#configuration-form').requestSubmit();}});
 function toggleResults(open){$('#results').hidden=!open;$('#browse').setAttribute('aria-expanded',String(open));}
 for(const [name,color]of Object.entries(colors)) {
@@ -36,7 +39,7 @@ function filter(open=false){
  return matches;
 }
 $('#search').addEventListener('input',()=>filter(!!$('#search').value.trim()));
-$('#search').addEventListener('keydown',e=>{if(e.key==='Enter'){const matches=filter();if(matches.length===1)show(matches[0].number);else $('#result-list button')?.focus();}if(e.key==='Escape'){toggleResults(false);$('#canvas').focus();}});
+$('#search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const matches=filter();if(matches.length===1)show(matches[0].number);else $('#result-list button')?.focus();}if(e.key==='Escape'){toggleResults(false);$('#canvas').focus();}});
 for(const id of ['category','period'])$('#'+id).addEventListener('change',()=>filter(true));
 $('#clear').onclick=()=>{for(const id of ['search','category','period'])$('#'+id).value='';filter();if(!browsing)toggleResults(false);};
 $('#browse').onclick=()=>{browsing=$('#results').hidden;filter();toggleResults(browsing);if(browsing)$('#result-list button')?.focus();};
@@ -64,8 +67,11 @@ $('#previous').onclick=()=>show(selected-1);$('#next').onclick=()=>show(selected
 $('#overview').onclick=()=>{if(selected!==null)closeDetails(false);world?.overview();toggleResults(false);};
 $('#zoom-in').onclick=()=>world?.zoom(true);$('#zoom-out').onclick=()=>world?.zoom(false);
 for(const b of document.querySelectorAll('button[data-layout]'))b.onclick=()=>{
- if(orbitalActive)leaveOrbitals();
- mode=b.dataset.layout;world?.setLayout(mode);
+ const returning=orbitalActive;
+ if(returning)leaveOrbitals();
+ const nextMode=b.dataset.layout;
+ if(!returning||nextMode!==mode)world?.setLayout(nextMode);
+ mode=nextMode;if(returning)b.focus({preventScroll:true});
  for(const button of document.querySelectorAll('button[data-layout]'))button.setAttribute('aria-pressed',String(button===b));
  $('#mode-label').textContent=descriptions[mode][0];$('#mode-description').textContent=descriptions[mode][1];
  $('#arrangement-note').textContent=mode==='Table'?'Outlines mark electron blocks; card colors mark element families.':'Spatial visualization · Chemical periods and groups stay defined by the Table.';
@@ -73,7 +79,7 @@ for(const b of document.querySelectorAll('button[data-layout]'))b.onclick=()=>{
 };
 $('#legend-toggle').onclick=()=>{const open=$('#legend').hidden;$('#legend').hidden=!open;$('#legend-toggle').textContent=open?'Hide legend':'Show legend';$('#legend-toggle').setAttribute('aria-expanded',String(open));world?.resize();};
 $('#about').onclick=()=>$('#guide').showModal();$('#close-guide').onclick=()=>$('#guide').close();
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#guide').open&&selected!==null)closeDetails();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!orbitalActive&&!$('#guide').open&&selected!==null)closeDetails();});
 function fallback(reason,failed=false){
  if(orbitalActive){orbitalActive=false;orbitalLab.close();$('#orbital-lab').hidden=true;document.body.classList.remove('orbital-mode');$('#open-orbitals').setAttribute('aria-pressed','false');$('.skip').href='#search';$('.skip').textContent='Find an element';}
  unavailable=failed;world?.pause(true);$('#guide').close();$('#fallback').hidden=false;document.body.classList.add('text-mode');$('#loading').hidden=true;$('#fallback-reason').textContent=reason;$('#resume-world').hidden=failed;

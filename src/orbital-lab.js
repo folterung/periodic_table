@@ -1,5 +1,6 @@
 import { parseConfiguration, angularOrbitals, subshells, superscript } from './electron-config.js';
 import { elements } from '../dist/elements.js';
+import { elementConfiguration, configurationSources } from './element-configurations.js';
 const $=selector=>document.querySelector(selector);
 export class OrbitalLab {
  constructor(announce){
@@ -11,9 +12,25 @@ export class OrbitalLab {
   $('#orbital-reset').onclick=()=>this.world?.reset();$('#orbital-zoom-in').onclick=()=>this.world?.zoom(true);$('#orbital-zoom-out').onclick=()=>this.world?.zoom(false);
   this.update();
  }
- update(){
+ loadElement(element){
+  const reference=elementConfiguration(element.number);
+  $('#electron-configuration').value=reference.configuration;
+  this.update({element,reference});
+ }
+ update(context=null){
   let configuration;try{configuration=parseConfiguration($('#electron-configuration').value);}catch(error){$('#configuration-error').textContent=error.message+' Showing the last valid configuration.';$('#configuration-error').hidden=false;$('#electron-configuration').setAttribute('aria-invalid','true');return false;}
   this.configuration=configuration;this.entry=configuration.entries.find(e=>e.key===configuration.lastKey);this.index=0;this.view='overall';this.hiddenLayers.clear();
+  this.context=context;
+  $('#orbital-element').hidden=!context;
+  $('#configuration-reference').hidden=!context;
+  if(context){
+   const {element,reference}=context,source=configurationSources[reference.source];
+   $('#orbital-element').textContent=`${element.name} (${element.symbol})`;
+   $('#configuration-reference-label').textContent=reference.predicted?'Predicted ground-state assignment':'Ground-state reference configuration';
+   $('#configuration-reference-note').textContent=reference.predicted?'Theoretical assignment; experimental confirmation is limited. The surfaces remain a schematic orbital model.':'Neutral, isolated atom. This reference assignment describes the dominant configuration.';
+   $('#configuration-source').textContent=source.name;
+   $('#configuration-source').href=reference.source==='rsc'?`https://periodic-table.rsc.org/element/${element.number}/${element.name.toLowerCase()}`:source.url;
+  }
   $('#configuration-error').hidden=true;$('#electron-configuration').removeAttribute('aria-invalid');
   $('#configuration-normalized').textContent=configuration.normalized;
   $('#configuration-total').textContent=configuration.total;
@@ -26,7 +43,7 @@ export class OrbitalLab {
  }
  draw(){
   const entry=this.entry;if(!entry)return;const focused=document.activeElement?.closest('#orbital-diagram .orbital-box'),focusedIndex=focused?.dataset.orbital;
-  const overall=this.view==='overall';$('#orbital-lab').dataset.view=this.view;$('#orbital-overall').setAttribute('aria-pressed',String(overall));$('#orbital-subshell').setAttribute('aria-pressed',String(!overall));$('#orbital-overlay-label').hidden=overall;$('#orbital-show-all').hidden=!overall||!this.hiddenLayers.size;$('#orbital-view-label').textContent=overall?'FULL CONFIGURATION':'SUBSHELL VIEW';
+  const overall=this.view==='overall';$('#orbital-lab').dataset.view=this.view;$('#orbital-overall').setAttribute('aria-pressed',String(overall));$('#orbital-subshell').setAttribute('aria-pressed',String(!overall));$('#orbital-overlay-label').hidden=overall;$('#orbital-show-all').hidden=!overall||!this.hiddenLayers.size;$('#orbital-view-label').textContent=(this.context?.reference.predicted?'PREDICTED · ':'')+(overall?'FULL CONFIGURATION':'SUBSHELL VIEW');
   for(const button of $('#subshell-list').children)button.setAttribute('aria-pressed',String(!overall&&button.dataset.subshell===entry.key));
   if(overall){this.drawOverall();return;}
   $('#orbital-lab').style.setProperty('--subshell-color',subshells[entry.type].color);
@@ -47,10 +64,16 @@ export class OrbitalLab {
   if(focusedKey)$('#orbital-diagram').querySelector(`[data-layer="${focusedKey}"]`)?.focus({preventScroll:true});
   this.world?.setConfiguration(configuration,this.hiddenLayers);
  }
- async open(){
+ async open(focus='input'){
   this.active=true;
   if(!this.initializing)this.initializing=(async()=>{try{const { OrbitalWorld }=await import('./orbital-scene.js');this.world=new OrbitalWorld($('#orbital-canvas'),()=>this.unavailable(),(key,index)=>{this.entry=this.configuration.entries.find(entry=>entry.key===key);this.index=index;this.view='subshell';this.draw();});$('#orbital-lab').dataset.renderer='webgl';$('#orbital-unavailable').hidden=true;this.draw();}catch{this.unavailable();}})();
-  await this.initializing;this.world?.pause(!this.active);if(this.active)$('#electron-configuration').focus({preventScroll:true});
+  await this.initializing;this.world?.pause(!this.active);if(this.active){
+   if(focus==='viewer'){
+    $('#orbital-current').focus({preventScroll:true});
+    if(innerWidth<=760)$('#orbital-viewer').scrollIntoView({block:'start'});
+    if(this.context)this.announce(`${this.context.element.name} (${this.context.element.symbol}). ${this.context.reference.predicted?'Predicted ground-state assignment. ':''}Overall view, ${this.configuration.total} electrons. All occupied subshells shown.`);
+   }else $('#electron-configuration').focus({preventScroll:true});
+  }
  }
  unavailable(){
   $('#orbital-unavailable').hidden=false;$('#orbital-lab').dataset.renderer='unavailable';

@@ -3,6 +3,7 @@ import { elements } from '../dist/elements.js';
 import { properties } from '../src/science.js';
 import { checkOrbitals } from './orbital-browser-qa.js';
 import { checkCardPresentation } from './card-browser-qa.js';
+import { checkProfileOrbitals } from './profile-orbitals-browser-qa.js';
 const out=document.createElement('pre');out.id='qa-results';Object.assign(out.style,{position:'fixed',left:'12px',bottom:'12px',maxHeight:'160px',overflow:'auto',zIndex:9999,background:'#021016f5',border:'1px solid #75dfc1',color:'#caffed',padding:'14px',fontSize:'11px',maxWidth:'95vw'});document.body.append(out);
 const logs=[],failures=[];function log(s){logs.push(s);out.textContent=logs.join('\n');out.scrollTop=out.scrollHeight;}
 function assert(check,message){if(!check){failures.push(message);log('FAIL: '+message);}}
@@ -87,6 +88,10 @@ try{
  world.motion.dispatchEvent(new MediaQueryListEvent('change',{matches:false,media:world.motion.media}));world.bloom.enabled=realBloom;button('Table').click();await settled(world);
  document.querySelector('#about').click();document.querySelector('#text-view').click();assert(document.body.classList.contains('text-mode')&&document.querySelectorAll('.fallback-card:not(.fallback-sources)').length===118,'Accessible element view contains all 118 profiles');document.querySelector('#resume-world').click();assert(!world.paused&&!document.body.classList.contains('text-mode'),'Return from accessible view');log('Accessible data view and return to WebGL verified.');
  await checkOrbitals(log,assert);
+ const profileFailures=failures.length;
+ await checkProfileOrbitals(log,assert);
+ out.dataset.profileOrbitals=failures.length===profileFailures?'passed':'failed';
+ out.dataset.profileSummary=logs.at(-1);
  out.dataset.status=failures.length?'failed':'passed';out.dataset.failures=String(failures.length);log(failures.length?`FAILED: ${failures.length} checks.`:'PASS: all browser checks complete.');
 }catch(error){log('FATAL: '+error.stack);out.dataset.status='failed';out.dataset.failures=String(failures.length+1);}
 function canvasWidth(){return world.canvas.clientWidth;}
