@@ -1,0 +1,64 @@
+[
+  {
+    "number": 109,
+    "configuration": "[Rn] 5f14 6d7 7s2",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/109/meitnerium"
+  },
+  {
+    "number": 110,
+    "configuration": "[Rn] 5f14 6d8 7s2",
+    "source": "cipt",
+    "url": "https://arxiv.org/abs/1910.01414",
+    "rscAlternative": "[Rn] 5f14 6d9 7s1"
+  },
+  {
+    "number": 111,
+    "configuration": "[Rn] 5f14 6d9 7s2",
+    "source": "cipt",
+    "url": "https://arxiv.org/abs/1910.01414",
+    "rscAlternative": "[Rn] 5f14 6d10 7s1"
+  },
+  {
+    "number": 112,
+    "configuration": "[Rn] 5f14 6d10 7s2",
+    "source": "cipt",
+    "url": "https://arxiv.org/abs/1910.01414"
+  },
+  {
+    "number": 113,
+    "configuration": "[Rn] 5f14 6d10 7s2 7p1",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/113/nihonium"
+  },
+  {
+    "number": 114,
+    "configuration": "[Rn] 5f14 6d10 7s2 7p2",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/114/flerovium"
+  },
+  {
+    "number": 115,
+    "configuration": "[Rn] 5f14 6d10 7s2 7p3",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/115/moscovium"
+  },
+  {
+    "number": 116,
+    "configuration": "[Rn] 5f14 6d10 7s2 7p4",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/116/livermorium"
+  },
+  {
+    "number": 117,
+    "configuration": "[Rn] 5f14 6d10 7s2 7p5",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/117/tennessine"
+  },
+  {
+    "number": 118,
+    "configuration": "[Rn] 5f14 6d10 7s2 7p6",
+    "source": "rsc",
+    "url": "https://periodic-table.rsc.org/element/118/oganesson"
+  }
+]

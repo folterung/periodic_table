@@ -6,6 +6,8 @@ Element cards show mass at the top-left, a large central symbol, atomic number b
 
 The Orbitals tab accepts typed electron configurations such as `1s2 2s2 2p4`, Unicode superscripts, caret exponents, and noble-gas shorthand such as `[Ar] 4s2 3d6`. It expands cores, validates subshell capacities and shell quantum numbers, and shows totals, shell populations, and a Hund-filling occupancy diagram. Overall view opens by default with every occupied orbital around a shared nucleus. Hide subshell layers to see inside, restore all layers, or click a 3D surface to inspect its orbital. Select a subshell and orbital box to rotate, pan, and zoom its real WebGL angular surface; optionally overlay other occupied orbitals in that subshell. Overall view returns to the complete model. Configuration, view mode, and layer visibility persist across tab changes.
 
+Click an element, then **View electron orbitals** in its profile to load its neutral ground-state reference configuration directly into Overall view. Every occupied layer opens visibly, with the element's name, symbol, source and a prediction label where applicable. Table navigation restores the selected profile and camera. Valid manual edits clear the imported element attribution. [Configuration sources and conventions](docs/electron-configurations.md) document all 118 records, exceptions and theoretical assignments.
+
 ## Development
 
 Install dependencies with `pnpm install`, then run `pnpm build` and `pnpm dev`. The local server runs at http://127.0.0.1:4173. Source is in `src/`; static output is in `dist/`. No external runtime CDN is required. `.openai/hosting.json` identifies the existing Sites project.
@@ -17,6 +19,8 @@ Install dependencies with `pnpm install`, then run `pnpm build` and `pnpm dev`. 
 ## Verification
 
 `pnpm verify` checks all retained scientific records against the original source commit, four layout geometries, every block-outline corner, search and filter semantics, configuration parsing and filling, all 16 finite angular orbital surfaces, and exact electron coverage and layer filtering in Overall view.
+
+The orbital verifier also checks all 118 neutral configurations against retained source data, including exception cases and predicted configurations. Browser QA checks the profile-to-orbitals flow for H, O, Fe, Cr, Cu, Ce, Cm, Lr, Ds, Rg and Og, with source labels, layer/error resets, focus handling, manual editing and exact camera preservation on return.
 
 `node scripts/build-qa.mjs` creates an isolated browser test page at http://127.0.0.1:4173/__qa/. It exercises the actual WebGL renderer, all 472 focused raycast picks, all profile fields, animation continuity, camera controls, touch input event paths, hover previews, reduced motion, selection persistence, and the accessible view. It measures actual projected numeral ink for all 25 table-axis labels, checking readability, viewport containment, and separation from cards and other numerals. It also tests configuration formats and errors, all 16 selectable orbital surfaces, overlays, focus retention, camera reset, touch controls, and tab switching. Test at desktop, tablet and phone viewport sizes. The QA output is excluded from production. `/__qa/fallback.html` simulates a browser without WebGL to verify the accessible fallback, including the orbital occupancy diagram.
 

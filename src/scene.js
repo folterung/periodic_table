@@ -44,7 +44,7 @@ export class ElementWorld {
   this.createCards();this.createBlocks();this.createEnvironment();
   this.composer=new EffectComposer(this.renderer);this.composer.addPass(new RenderPass(this.scene,this.camera));this.bloom=new UnrealBloomPass(new THREE.Vector2(1,1),.24,.35,.92);this.composer.addPass(this.bloom);this.composer.addPass(new OutputPass());this.bloom.enabled=!this.mobile;
   this.resize();this.overview(false);
-  this.bindInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas.parentElement);
+  this.bindInput();this.resizeObserver=new ResizeObserver(()=>this.resize(canvas.parentElement.clientWidth!==this.viewportWidth||canvas.parentElement.clientHeight!==this.viewportHeight));this.resizeObserver.observe(canvas.parentElement);
   this.motion.addEventListener('change',event=>{this.reduced=event.matches;this.controls.enableDamping=!this.reduced;if(this.reduced){this.finishMorph();this.finishCamera();}});
   this.frameTimes=[];this.lastFrame=performance.now();this.frames=0;this.lastDiagnostics=0;
   this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.pause(true);callbacks.onFailure?.();});
@@ -210,6 +210,7 @@ export class ElementWorld {
  zoom(closer){this.cancelCamera();if(closer)this.controls.dollyIn(.8);else this.controls.dollyOut(.8);this.controls.update();}
  resize(refit=true){
   const width=this.canvas.parentElement.clientWidth,height=this.canvas.parentElement.clientHeight;if(!width||!height)return;
+  this.viewportWidth=width;this.viewportHeight=height;
   const mobile=width<=760||matchMedia('(pointer: coarse)').matches;if(mobile!==this.mobile){this.mobile=mobile;this.bloom.enabled=!mobile;this.quality=Math.min(devicePixelRatio||1,mobile?1.35:1.8);this.renderer.setPixelRatio(this.quality);}
   this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false);this.composer.setSize(width,height);
   // Bloom is intentionally low resolution; the card text remains full resolution.

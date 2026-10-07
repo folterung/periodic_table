@@ -27,3 +27,19 @@ Silicon shows the retained mass, central symbol, atomic number below the symbol,
 - [Grid](cards-after-grid.png)
 
 The same front/back artwork is shared by all four arrangements. The full browser suite passed on desktop, tablet, phone, and a narrower 320 px phone viewport; see [verification](../../VERIFICATION.md).
+
+## Element profile → Orbitals — 7 October 2026
+
+The mint action opens the selected element's reference configuration in the existing Overall view. The imported identity and source stay visible during subshell inspection; valid manual edits clear that attribution. Table navigation restores the selected profile and camera.
+
+| Profile action | Overall orbital view |
+| --- | --- |
+| ![Chromium profile with the orbital action](profile-orbitals-button-desktop.png) | ![Chromium overall configuration](profile-orbitals-overall-desktop.png) |
+
+Phone previews show the accessible action and the prediction notice beside the model:
+
+| Phone profile | Phone orbital view |
+| --- | --- |
+| ![Lawrencium profile action](profile-orbitals-button-phone.png) | ![Lawrencium predicted overall configuration](profile-orbitals-overall-phone.png) |
+
+See [source documentation](../electron-configurations.md) and [verification](../../VERIFICATION.md). Screenshots are outside the published `dist/` directory.

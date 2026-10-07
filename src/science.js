@@ -17,7 +17,7 @@ export function properties(e) {
  ];
 }
 export function profileHTML(e) {
- return `<div class="identity"><div class="big-symbol"><span>${e.number}</span><strong>${e.symbol}</strong></div><div><h2 id="element-name">${e.name}</h2><p data-field="category">${e.category}</p></div></div><dl class="properties">${properties(e).map(([label,value,note,key])=>`<div class="property"><dt>${label}</dt><dd data-field="${key}">${value}</dd><small>${note}</small></div>`).join('')}</dl><p class="note">${valenceNote(e)}</p><p class="note">${massNote(e)}</p><a class="source-link" target="_blank" rel="noreferrer" href="https://periodic-table.rsc.org/element/${e.number}/${e.name.toLowerCase()}">Explore ${e.name} at the Royal Society of Chemistry ↗</a>`;
+ return `<div class="identity"><div class="big-symbol"><span>${e.number}</span><strong>${e.symbol}</strong></div><div><h2 id="element-name">${e.name}</h2><p data-field="category">${e.category}</p></div></div><button id="view-element-orbitals" type="button" aria-label="View electron orbitals for ${e.name}" aria-controls="orbital-lab">View electron orbitals <span aria-hidden="true">↗</span></button><dl class="properties">${properties(e).map(([label,value,note,key])=>`<div class="property"><dt>${label}</dt><dd data-field="${key}">${value}</dd><small>${note}</small></div>`).join('')}</dl><p class="note">${valenceNote(e)}</p><p class="note">${massNote(e)}</p><a class="source-link" target="_blank" rel="noreferrer" href="https://periodic-table.rsc.org/element/${e.number}/${e.name.toLowerCase()}">Explore ${e.name} at the Royal Society of Chemistry ↗</a>`;
 }
 export function matchElement(e, query, category, period) {
  const q=query.trim().toLowerCase(), aliases={13:'aluminum',55:'cesium',16:'sulphur'};
