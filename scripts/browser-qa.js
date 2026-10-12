@@ -4,6 +4,7 @@ import { properties } from '../src/science.js';
 import { checkOrbitals } from './orbital-browser-qa.js';
 import { checkCardPresentation } from './card-browser-qa.js';
 import { checkProfileOrbitals } from './profile-orbitals-browser-qa.js';
+import { checkValence } from './valence-browser-qa.js';
 const out=document.createElement('pre');out.id='qa-results';Object.assign(out.style,{position:'fixed',left:'12px',bottom:'12px',maxHeight:'160px',overflow:'auto',zIndex:9999,background:'#021016f5',border:'1px solid #75dfc1',color:'#caffed',padding:'14px',fontSize:'11px',maxWidth:'95vw'});document.body.append(out);
 const logs=[],failures=[];function log(s){logs.push(s);out.textContent=logs.join('\n');out.scrollTop=out.scrollHeight;}
 function assert(check,message){if(!check){failures.push(message);log('FAIL: '+message);}}
@@ -92,6 +93,10 @@ try{
  await checkProfileOrbitals(log,assert);
  out.dataset.profileOrbitals=failures.length===profileFailures?'passed':'failed';
  out.dataset.profileSummary=logs.at(-1);
+ const valenceFailures=failures.length;
+ await checkValence(log,assert);
+ out.dataset.valence=failures.length===valenceFailures?'passed':'failed';
+ out.dataset.valenceSummary=logs.at(-1);
  out.dataset.status=failures.length?'failed':'passed';out.dataset.failures=String(failures.length);log(failures.length?`FAILED: ${failures.length} checks.`:'PASS: all browser checks complete.');
 }catch(error){log('FATAL: '+error.stack);out.dataset.status='failed';out.dataset.failures=String(failures.length+1);}
 function canvasWidth(){return world.canvas.clientWidth;}

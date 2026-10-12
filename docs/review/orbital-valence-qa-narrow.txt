@@ -1,0 +1,16 @@
+Renderer: WebGL2; 118 independent cards. Viewport 320 × 700.
+All 25 table numbers: projected raster ink is readable, inside the viewport, and clear of cards and neighboring numbers.
+Outline fade completes before card/camera movement; interrupted fades, animated morphs and rapid switching verified.
+Table: 118 cards rendered, 118/118 camera-focused raycast picks; all scientific profile fields verified.
+Helix: 118 cards rendered, 118/118 camera-focused raycast picks; all scientific profile fields verified.
+Sphere: 118 cards rendered, 118/118 camera-focused raycast picks; all scientific profile fields verified.
+Grid: 118 cards rendered, 118/118 camera-focused raycast picks; all scientific profile fields verified.
+Name / symbol / number search, family / period filters, match highlighting, and empty states verified in all four modes.
+Hover preview, clearing on leave, and return to the saved overview verified.
+Keyboard orbit, pan, zoom and reset verified.
+Touch rotation, two-finger pan / pinch and drag-versus-click event paths verified.
+Accessible data view and return to WebGL verified.
+Orbitals: overall electron coverage, layer hiding/restoring, direct 3D selection, all 16 angular shapes, input formats, capacity errors, filling boxes, overlay, camera, touch and tab switching verified.
+Profile → Orbitals: H, O, Fe, Cr, Cu, Pd, Ce, Cm, Lr, Ds, Rg and Og; raycast picks, all electrons/layers, valence conventions and visibility/inspection invariants, source/prediction context, focus, manual editing and unchanged Table camera verified.
+Valence: named examples, manual and same-total excited input, qualified labels, accessible updates, invalid-input retention and responsive counter visibility verified.
+PASS: all browser checks complete.

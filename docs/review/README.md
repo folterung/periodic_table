@@ -43,3 +43,15 @@ Phone previews show the accessible action and the prediction notice beside the m
 | ![Lawrencium profile action](profile-orbitals-button-phone.png) | ![Lawrencium predicted overall configuration](profile-orbitals-overall-phone.png) |
 
 See [source documentation](../electron-configurations.md) and [verification](../../VERIFICATION.md). Screenshots are outside the published `dist/` directory.
+
+## Orbital valence counter — 12 October 2026
+
+The mint count appears beside total electrons in the editor and beside the orbital model. Linked Palladium uses the Table's formal s + d convention: 10 valence electrons from 4d¹⁰ and empty 5s. The custom-input preview shows the separately labeled highest-occupied-shell estimate and its explanation.
+
+![Desktop Palladium valence counter](orbital-valence-desktop.png)
+
+| Phone orbital model | Custom configuration explanation |
+| --- | --- |
+| ![Palladium model and valence counter](orbital-valence-phone.png) | ![Custom configuration estimate and limits](orbital-valence-custom-phone.png) |
+
+Full browser QA reports: [desktop](orbital-valence-qa-desktop.txt), [tablet](orbital-valence-qa-tablet.txt), [phone](orbital-valence-qa-phone.txt), and [320 px phone](orbital-valence-qa-narrow.txt). Every suite passed with zero failures. See [calculation and references](../orbital-valence.md) and [verification](../../VERIFICATION.md).
