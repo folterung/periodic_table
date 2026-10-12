@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import './verify-element-configurations.mjs';
+import './verify-valence.mjs';
 import { parseConfiguration, occupations, subshells, angularOrbitals } from '../src/electron-config.js';
 import { orbitalGeometry } from '../src/orbital-geometry.js';
 import { configurationSurfaces } from '../src/orbital-overview.js';

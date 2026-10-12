@@ -10,7 +10,7 @@ export async function checkProfileOrbitals(log,assert){
  const capture=canvas.setPointerCapture,release=canvas.releasePointerCapture;
  canvas.setPointerCapture=()=>{};canvas.releasePointerCapture=()=>{};
  try{
-  for(const number of [1,8,26,24,29,58,96,103,110,111,118]){
+  for(const number of [1,8,26,24,29,46,58,96,103,110,111,118]){
    const element=elements[number-1];
    show(number,{focus:false});table.render(performance.now());
    // Select through the actual canvas pointer/raycast route, not just the list helper.
@@ -37,6 +37,14 @@ export async function checkProfileOrbitals(log,assert){
    assert($('#configuration-reference-label').textContent.includes('Predicted')===elementConfiguration(number).predicted,`${element.symbol}: prediction label matches data`);
    assert($('#orbital-view-label').textContent.includes('PREDICTED')===elementConfiguration(number).predicted,`${element.symbol}: prediction status is visible beside the model`);
    assert(document.activeElement===$('#orbital-current'),`${element.symbol}: focus moves to the orbital heading`);
+   assert(lab.valence.count===element.valence&&$('#configuration-valence').textContent===String(element.valence)&&$('#orbital-valence-count').textContent===String(element.valence),`${element.symbol}: editor and scene valence match the Table convention`);
+   assert($('#configuration-valence-label').textContent==='Valence electrons'&&$('#announcement').textContent.includes(`${element.valence} valence electrons`),`${element.symbol}: label and announcement distinguish valence from total electrons`);
+   const outerKey=lab.configuration.entries.at(-1).key;
+   $(`[data-layer="${outerKey}"]`).click();
+   assert($('#configuration-valence').textContent===String(element.valence)&&$('#orbital-valence-count').textContent===String(element.valence),`${element.symbol}: hiding the outer layer cannot change valence`);
+   $('#subshell-list button').click();
+   assert(lab.valence.count===element.valence&&$('#orbital-valence-count').textContent===String(element.valence),`${element.symbol}: subshell inspection cannot change valence`);
+   $('#orbital-overall').click();$('#orbital-show-all').click();
    assert(lab.world.renderer.getContext().getError()===0,`${element.symbol}: orbital renderer has no error`);
    $('button[data-layout="Table"]').click();await frame();await frame();
    assert(!lab.active&&!table.paused&&table.selected===number&&!$('#detail').hidden,`${element.symbol}: Table restores the selected element and profile`);
@@ -56,5 +64,5 @@ export async function checkProfileOrbitals(log,assert){
   assert(table.camera.position.distanceTo(position)<1e-6&&table.controls.target.distanceTo(target)<1e-6,'Normal-motion return preserves a rotated, panned and zoomed camera');
   table.controls.enableDamping=true;closeDetails(false);table.overview(false);
  }finally{canvas.setPointerCapture=capture;canvas.releasePointerCapture=release;}
- log('Profile → Orbitals: H, O, Fe, Cr, Cu, Ce, Cm, Lr, Ds, Rg and Og; raycast picks, all electrons/layers, source/prediction context, focus, manual editing and unchanged Table camera verified.');
+ log('Profile → Orbitals: H, O, Fe, Cr, Cu, Pd, Ce, Cm, Lr, Ds, Rg and Og; raycast picks, all electrons/layers, valence conventions and visibility/inspection invariants, source/prediction context, focus, manual editing and unchanged Table camera verified.');
 }

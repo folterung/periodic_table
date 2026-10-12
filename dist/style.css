@@ -36,3 +36,6 @@
 @media(max-width:760px){.orbital-mode .topbar{position:sticky;z-index:9;top:0}.orbital-mode #orbital-lab{margin-top:0}#orbital-viewer{scroll-margin-top:145px}.orbital-stage-heading #orbital-element{font-size:14px}#view-element-orbitals{margin-bottom:10px;font-size:13px}}
 
 #orbital-current{width:fit-content;max-width:100%}
+
+.configuration-stats{display:grid;grid-template-columns:1fr 1fr;gap:15px 20px}.configuration-stats .valence-stat strong{color:var(--mint)}.configuration-stats .valence-stat small{display:block;color:#b8d7cb;font-size:11px;line-height:1.5;margin-top:6px}.configuration-stats .unpaired-stat{grid-column:1/-1;display:flex;align-items:baseline;gap:8px}.configuration-stats .unpaired-stat strong{font-size:17px}.configuration-stats .unpaired-stat span{margin:0}#configuration-valence-help{font-size:12px;line-height:1.65;color:#b7cddc;margin:13px 0 0}#orbital-valence-summary{color:#c6f8e7;font-size:13px;line-height:1.5}#orbital-valence-count{font-size:19px;color:var(--mint)}#orbital-valence-summary span{font-size:inherit;color:inherit}
+@media(max-width:760px){.orbital-camera-actions{bottom:116px}#orbital-valence-summary{font-size:12px;max-width:270px}.configuration-stats{gap:14px 18px}}

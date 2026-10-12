@@ -1,12 +1,16 @@
 import { parseConfiguration, angularOrbitals, subshells, superscript } from './electron-config.js';
 import { elements } from '../dist/elements.js';
 import { elementConfiguration, configurationSources } from './element-configurations.js';
+import { configurationValence } from './valence.js';
 const $=selector=>document.querySelector(selector);
 export class OrbitalLab {
  constructor(announce){
   this.announce=announce;this.active=false;this.world=null;this.index=0;this.view='overall';this.hiddenLayers=new Set();
   $('#configuration-form').addEventListener('submit',e=>{e.preventDefault();if(this.update()&&innerWidth<=760)$('#orbital-stage').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
-  for(const button of document.querySelectorAll('[data-configuration]'))button.onclick=()=>{$('#electron-configuration').value=button.dataset.configuration;this.update();};
+  for(const button of document.querySelectorAll('[data-configuration]'))button.onclick=()=>{
+   const element=elements[Number(button.dataset.element)-1];
+   if(element)this.loadElement(element);else{$('#electron-configuration').value=button.dataset.configuration;this.update();}
+  };
   $('#orbital-overlay').onchange=()=>this.draw();
   $('#orbital-overall').onclick=()=>{this.view='overall';this.draw();};$('#orbital-subshell').onclick=()=>{this.view='subshell';this.draw();};$('#orbital-show-all').onclick=()=>{this.hiddenLayers.clear();this.draw();};
   $('#orbital-reset').onclick=()=>this.world?.reset();$('#orbital-zoom-in').onclick=()=>this.world?.zoom(true);$('#orbital-zoom-out').onclick=()=>this.world?.zoom(false);
@@ -34,12 +38,20 @@ export class OrbitalLab {
   $('#configuration-error').hidden=true;$('#electron-configuration').removeAttribute('aria-invalid');
   $('#configuration-normalized').textContent=configuration.normalized;
   $('#configuration-total').textContent=configuration.total;
+  this.valence=configurationValence(configuration,context?.element);
+  $('#configuration-valence').textContent=this.valence.count;
+  $('#configuration-valence-label').textContent=this.valence.label;
+  $('#configuration-valence-convention').textContent=this.valence.convention;
+  $('#configuration-valence-help').textContent=this.valence.explanation;
+  $('#orbital-valence-count').textContent=this.valence.count;
+  $('#orbital-valence-label').textContent=this.valence.label.toLowerCase();
+  $('#orbital-valence-convention').textContent=this.valence.convention;
   $('#configuration-unpaired').textContent=configuration.unpaired;
-  const match=elements[configuration.total-1];$('#configuration-match').textContent=match?`Neutral atom with ${configuration.total} electrons: ${match.name} (${match.symbol}).`:'No neutral element in this table has this electron count.';
+  const match=elements[configuration.total-1];$('#configuration-match').textContent=context?`Neutral ${context.element.name} (${context.element.symbol}): ${configuration.total} total electrons.`:match?`${configuration.total} electrons matches the total for neutral ${match.name} (${match.symbol}). Count alone does not identify an atom or ion.`:'No neutral element in this table has this electron count; identity and charge are not determined.';
   $('#configuration-shells').textContent=configuration.shells.map(s=>`n=${s.n}: ${s.count}`).join(' · ');
   $('#orbital-lab').dataset.electrons=String(configuration.total);
   $('#subshell-list').replaceChildren(...configuration.entries.map(entry=>{const button=document.createElement('button');button.type='button';button.dataset.subshell=entry.key;button.style.setProperty('--subshell-color',subshells[entry.type].color);button.textContent=entry.key+superscript(entry.count);button.setAttribute('aria-label',`View ${entry.key}, ${entry.count} electrons`);button.onclick=()=>{this.entry=entry;this.index=0;this.view='subshell';this.draw();};return button;}));
-  this.draw();this.world?.reset();this.announce(`Overall configuration updated: ${configuration.total} electrons, ${configuration.unpaired} unpaired in the filling model.`);return true;
+  this.draw();this.world?.reset();this.announce(`Overall configuration updated: ${configuration.total} total electrons. ${this.valence.announcement} ${configuration.unpaired} unpaired in the filling model.`);return true;
  }
  draw(){
   const entry=this.entry;if(!entry)return;const focused=document.activeElement?.closest('#orbital-diagram .orbital-box'),focusedIndex=focused?.dataset.orbital;
@@ -71,7 +83,7 @@ export class OrbitalLab {
    if(focus==='viewer'){
     $('#orbital-current').focus({preventScroll:true});
     if(innerWidth<=760)$('#orbital-viewer').scrollIntoView({block:'start'});
-    if(this.context)this.announce(`${this.context.element.name} (${this.context.element.symbol}). ${this.context.reference.predicted?'Predicted ground-state assignment. ':''}Overall view, ${this.configuration.total} electrons. All occupied subshells shown.`);
+    if(this.context)this.announce(`${this.context.element.name} (${this.context.element.symbol}). ${this.context.reference.predicted?'Predicted ground-state assignment. ':''}Overall view, ${this.configuration.total} total electrons. ${this.valence.announcement} All occupied subshells shown.`);
    }else $('#electron-configuration').focus({preventScroll:true});
   }
  }
